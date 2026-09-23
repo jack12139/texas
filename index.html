@@ -24,13 +24,28 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .opp .oin{display:block}
 .opp .oh{display:flex;align-items:center;gap:6px}
 .opp .avatar{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#0d1116;flex:none}
-.opp .oname{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:92px}
+.opp .oname{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .opp .obet{margin-top:3px;font-size:12px;color:#ffd97a;font-weight:700;min-height:15px}
 .opp .ocards{display:flex;gap:4px;margin-top:5px;height:47px;align-items:center;justify-content:center}
-.opp .ostatus{position:absolute;top:5px;right:6px;font-size:10px;padding:1px 6px;border-radius:8px;background:#a3323c;color:#fff;display:none;font-weight:700}
-.opp .od{position:absolute;bottom:5px;right:6px;width:20px;height:20px;border-radius:50%;background:#f4f1e6;color:#222;font-size:11px;font-weight:800;display:none;align-items:center;justify-content:center}
-.opp.turn{border-color:#ffd54a;box-shadow:0 0 0 2px rgba(255,213,74,.3),0 0 16px rgba(255,213,74,.35)}
-.opp.folded .oin{opacity:.45}
+.opp .ostack{margin-left:auto;font-size:11.5px;color:#ffd97a;font-weight:800;flex:none}
+.opp .otags{display:flex;gap:4px;margin-top:3px;min-height:14px;flex-wrap:wrap}
+.otag{font-size:10px;font-weight:700;padding:0 6px;border-radius:6px;line-height:14px;background:#31465a;color:#cfe0ee}
+.otag.blind{background:#7e2a33;color:#ffd9dd}
+.otag.dealer{background:#f4f1e6;color:#222}
+.otag.utg{background:#b8860b;color:#fff6df}
+.otag.st{background:#a3323c;color:#fff}
+.otag.allin{background:#c8952c;color:#241a05}
+.opp .otimer{position:absolute;top:5px;right:6px;font-size:11px;font-weight:800;background:#c8952c;color:#241a05;border-radius:9px;padding:1px 8px;display:none}
+.opp .otimer.low{background:#e05252;color:#fff;animation:blink 0.8s infinite}
+@keyframes blink{50%{opacity:.45}}
+.opp.turn{border-color:#ffd54a;animation:oppulse 1.5s infinite}
+@keyframes oppulse{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,213,74,.25),0 0 10px rgba(255,213,74,.25)}
+  50%{box-shadow:0 0 0 3px rgba(255,213,74,.6),0 0 20px rgba(255,213,74,.5)}
+}
+.opp.folded .oh,.opp.folded .otags,.opp.folded .obet,.opp.folded .ocards{opacity:.35;filter:grayscale(1)}
+.opp .foldmark{position:absolute;inset:0;display:none;align-items:center;justify-content:center;font-size:21px;font-weight:800;color:#ffb3b3;letter-spacing:5px;background:rgba(10,6,8,.5);border-radius:12px;z-index:2;text-shadow:0 1px 4px rgba(0,0,0,.6)}
+.opp.folded .foldmark{display:flex}
 .opp.win{border-color:#5ce27a;box-shadow:0 0 0 2px rgba(92,226,122,.4),0 0 14px rgba(92,226,122,.45)}
 
 #center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;min-height:170px}
@@ -75,25 +90,31 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 #me-cards{display:flex;gap:8px}
 #me-info{font-size:13px;color:#c7d0da;display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
 #me-info b{color:#ffd97a}
+#me.turn #me-cards{filter:drop-shadow(0 0 10px rgba(255,213,74,.55))}
+#me.folded #me-cards{opacity:.35;filter:grayscale(1)}
+#me-info .mtag.fk{font-size:14px;font-weight:800;color:#ff8a8a}
+#me-info .mtimer{font-size:13px;font-weight:800;color:#ffd97a}
+#me-info .mtimer.low{color:#e05252}
+.otag.memini{background:#31465a;color:#cfe0ee}
 #me-info .mtag{font-size:11px;color:#93a3b3}
 #me-spect{display:none;background:rgba(9,13,18,.8);border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:16px 30px;color:#93a3b3;font-size:13px}
 #me.spect #me-spect{display:block}
 #me.spect #me-cards,#me.spect #me-info,#me.spect #me-bet{display:none}
 
-#ab{height:126px;background:rgba(12,17,23,.97);border-top:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;padding:8px 12px;gap:8px;flex:none}
+#ab{height:146px;background:rgba(12,17,23,.97);border-top:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;padding:8px 12px;gap:8px;flex:none}
 #ab-info{font-size:12px;color:#93a3b3;text-align:center;height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #btnrow{display:flex;gap:10px}
-.btn{flex:1;border:none;border-radius:12px;padding:13px 0;font-size:16px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s,transform .05s}
+.btn{flex:1;border:none;border-radius:12px;padding:15px 0;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s,transform .05s}
 .btn:active:not(:disabled){transform:translateY(1px)}
 .btn:disabled{opacity:.35;cursor:default}
 .btn-fold{background:#7e2a33;color:#ffd9dd}
 .btn-call{background:#275e7e;color:#d9efff}
-.btn-raise{background:#b8860b;color:#fff6df;flex:1.4}
+.btn-raise{background:#b8860b;color:#fff6df;flex:1.6;font-size:18px;box-shadow:0 3px 10px rgba(184,134,11,.35)}
 #raiserow{display:none;align-items:center;gap:8px}
 #raiserow.show{display:flex}
-#range{flex:1;accent-color:#ffd54a}
-#range-val{font-size:13px;color:#ffd97a;font-weight:800;min-width:64px;text-align:right}
-.qp{background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:5px 0;font-size:11.5px;cursor:pointer;font-family:inherit;flex:1}
+#range{flex:1;accent-color:#ffd54a;height:30px}
+#range-val{font-size:14px;color:#ffd97a;font-weight:800;min-width:66px;text-align:right}
+.qp{background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:9px 0;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;flex:1}
 .qp:active{background:#31404f}
 
 #log-panel{position:absolute;top:38px;bottom:0;left:0;right:0;background:rgba(6,9,13,.94);z-index:15;display:none;flex-direction:column;padding:10px 14px}
@@ -200,6 +221,10 @@ let overInfo = null;
 let logLines = [];
 let bannerState = null;
 let snapshotWaitingNext = false;
+let turnDeadline = 0;
+let utgIdx = -1;
+let clientTurnLeft = null;
+const TURN_MS = 30000;
 const delay = ms => new Promise(r => setTimeout(r, ms * ((typeof window !== 'undefined' && window.__speed) || 1)));
 function beep(f, d, g){
   g = g || 0.05;
@@ -526,14 +551,26 @@ function buildOppSlots(){
   let h = '';
   for(let k = 0; k < n; k++){
     h += '<div class="opp empty" id="opp-' + k + '">' +
-      '<span class="oin"></span>' +
-      '<div class="oh"><span class="avatar"></span><span class="oname"></span></div>' +
+      '<span class="oin">空位</span>' +
+      '<div class="oh"><span class="avatar"></span><span class="oname"></span><span class="ostack"></span></div>' +
+      '<div class="otags"></div>' +
       '<div class="obet"></div>' +
       '<div class="ocards"><div class="card sc empty"></div><div class="card sc empty"></div></div>' +
-      '<span class="ostatus"></span><span class="od">庄</span>' +
+      '<span class="otimer"></span>' +
+      '<span class="foldmark">已弃牌</span>' +
       '</div>';
   }
   el.innerHTML = h;
+}
+function posTags(p){
+  const tags = [];
+  if(dealerIdx === p.i) tags.push('<span class="otag dealer">庄</span>');
+  if(p.blind === '小盲') tags.push('<span class="otag blind">小盲</span>');
+  if(p.blind === '大盲') tags.push('<span class="otag blind">大盲</span>');
+  if(stageLabel === '翻牌前' && utgIdx === p.i && players.filter(x => x.seated && !x.elim).length >= 3)
+    tags.push('<span class="otag utg">枪口</span>');
+  if(p.allIn && !p.folded) tags.push('<span class="otag allin">全下</span>');
+  return tags.join('');
 }
 function renderSlotCards(slots, p, big){
   slots.forEach((slot, j) => {
@@ -578,8 +615,9 @@ function render(){
     if(!p.seated){
       box.className = 'opp empty';
       box.querySelector('.oin').textContent = '空位';
-      box.querySelector('.ostatus').style.display = 'none';
-      box.querySelector('.od').style.display = 'none';
+      box.querySelector('.ostack').textContent = '';
+      box.querySelector('.otags').innerHTML = '';
+      box.querySelector('.obet').textContent = '';
       renderSlotCards(box.querySelectorAll('.ocards .card'), p, false);
       continue;
     }
@@ -592,32 +630,31 @@ function render(){
     const av = box.querySelector('.avatar');
     av.textContent = p.name[0];
     av.style.background = p.color;
-    box.querySelector('.obet').textContent =
-      p.elim ? '已出局' :
-      p.bet > 0 ? '下注 $' + p.bet :
-      p.stack <= 0 ? '筹码 $0' : '';
-    const st = box.querySelector('.ostatus');
-    if(p.folded && !p.elim){ st.style.display = 'inline-block'; st.textContent = '弃牌'; }
-    else if(p.allIn && !p.folded){ st.style.display = 'inline-block'; st.textContent = '全下'; }
-    else st.style.display = 'none';
-    box.querySelector('.od').style.display = dealerIdx === p.i ? 'flex' : 'none';
+    box.querySelector('.ostack').textContent = p.elim ? '出局' : '$' + p.stack;
+    box.querySelector('.otags').innerHTML = posTags(p);
+    box.querySelector('.obet').textContent = p.bet > 0 ? '下注 $' + p.bet : '';
     renderSlotCards(box.querySelectorAll('.ocards .card'), p, false);
   }
   const me = $('#me');
   if(localIdx < 0 || !players[localIdx] || !players[localIdx].seated){
     me.classList.add('spect');
+    me.classList.remove('turn');
     me.querySelector('#me-bet').innerHTML = '';
     me.querySelector('#me-info').innerHTML = '观战中 · 等待空位或本局结束';
-    renderSlotCards(document.querySelectorAll('#me-cards .card'), {seated:false, hand:[], handHidden:false, revealed:false}, true);
+    renderSlotCards(document.querySelectorAll('#me-cards .card'), {seated:false, hand:[], handHidden:false, revealed:false, i:-1}, true);
   }else{
     me.classList.remove('spect');
     const p = players[localIdx];
+    const myTurn = curActor === localIdx && !p.folded && p.stack > 0 && !overlayVisible() && inHandCount() >= 2;
+    me.classList.toggle('turn', myTurn);
+    me.classList.toggle('folded', p.folded && !p.elim);
     me.querySelector('#me-bet').innerHTML = p.bet > 0 ? '<span class="pill">下注 $' + p.bet + '</span>' : '';
     me.querySelector('#me-info').innerHTML =
       '<b>' + p.name + '</b><span>筹码 $' + p.stack + '</span>' +
-      (p.folded ? '<span class="mtag">已弃牌</span>' : '') +
-      (p.allIn && !p.folded ? '<span class="mtag">全下</span>' : '') +
-      (p.elim ? '<span class="mtag">已出局</span>' : '');
+      posTags(p).replace(/class="otag/g, 'class="otag memini') +
+      (p.folded && !p.elim ? '<span class="mtag fk">已弃牌</span>' : '') +
+      (p.elim ? '<span class="mtag">已出局</span>' : '') +
+      '<span class="mtimer" id="me-timer"></span>';
     renderSlotCards(document.querySelectorAll('#me-cards .card'), p, true);
   }
   $('#pot').textContent = '底池 $' + potTotal();
@@ -677,9 +714,6 @@ function updateRaiseLabel(){
   const word = v >= (p.bet + p.stack) ? '全下到' : (curBet === 0 ? '下注' : '加注到');
   raise.textContent = word + ' $' + v;
 }
-function humanAction(){
-  return new Promise(res => { humanResolver = res; });
-}
 function resolveHuman(a){
   if(!humanResolver) return;
   const r = humanResolver;
@@ -725,6 +759,7 @@ function newHand(){
   postBlind(bbIdx, curBlinds.bb, '大盲');
   curBet = Math.max(players[sbIdx].bet, players[bbIdx].bet);
   minRaise = curBlinds.bb;
+  utgIdx = actives.length >= 3 ? nextActiveFrom(bbIdx) : -1;
 }
 async function dealHoles(){
   const seq = [];
@@ -742,10 +777,34 @@ async function dealHoles(){
     }
   }
 }
+function waitLocalAction(i, timeoutMs){
+  return new Promise(res => {
+    let done = false;
+    const t = setTimeout(() => {
+      const p = players[i];
+      const auto = (curBet - p.bet <= 0) ? {t:'check', auto:true} : {t:'fold', auto:true};
+      log(N(p) + ' 思考超时，自动' + (auto.t === 'check' ? '过牌' : '弃牌'));
+      finish(auto);
+    }, timeoutMs * ((window.__speed) || 1));
+    function finish(a){
+      if(done) return;
+      done = true;
+      clearTimeout(t);
+      humanResolver = null;
+      res(a);
+    }
+    humanResolver = finish;
+    turnDeadline = Date.now() + timeoutMs * ((window.__speed) || 1);
+  });
+}
 function waitRemoteAction(i, timeoutMs){
   return new Promise(res => {
     let done = false;
-    const t = setTimeout(() => finish({t:'fold', remoteTimeout:true}), timeoutMs * ((window.__speed) || 1));
+    const t = setTimeout(() => {
+      const p = players[i];
+      const auto = (curBet - p.bet <= 0) ? {t:'check', remoteTimeout:true} : {t:'fold', remoteTimeout:true};
+      finish(auto);
+    }, timeoutMs * ((window.__speed) || 1));
     function finish(a){
       if(done) return;
       done = true;
@@ -754,6 +813,7 @@ function waitRemoteAction(i, timeoutMs){
       res(a);
     }
     pendingRemote[i] = finish;
+    turnDeadline = Date.now() + timeoutMs * ((window.__speed) || 1);
   });
 }
 async function bettingRound(){
@@ -762,23 +822,24 @@ async function bettingRound(){
     if(inHandCount() <= 1 || roundComplete()) return;
     const ctl = controllerOf(curActor);
     if(ctl === 'none'){ curActor = nextActorAfter(curActor); continue; }
-    renderActionBar();
+    render();
     if(ctl === 'local'){
       let a;
       if(typeof window !== 'undefined' && window.__auto){
         await delay(20);
         a = window.__auto(players[curActor], curBet - players[curActor].bet);
       }else{
-        a = await humanAction();
+        a = await waitLocalAction(curActor, TURN_MS);
       }
       applyAction(curActor, a);
     }else if(ctl === 'remote'){
-      const a = await waitRemoteAction(curActor, 45000);
+      const a = await waitRemoteAction(curActor, TURN_MS);
       applyAction(curActor, a);
     }else{
       await delay(600 + Math.random() * 800);
       applyAction(curActor, aiAction(players[curActor]));
     }
+    turnDeadline = 0;
     render();
     if(inHandCount() <= 1) return;
     curActor = nextActorAfter(curActor);
@@ -797,7 +858,7 @@ function applyAction(i, a){
   }
   if(a.t === 'check'){
     p.acted = true;
-    log(N(p) + ' 过牌');
+    log(N(p) + (a.remoteTimeout || a.auto ? ' 思考超时，自动过牌' : ' 过牌'));
     beep(700, .05);
     return;
   }
@@ -835,7 +896,7 @@ function closeRoad(){
   players.forEach(p => { if(p.seated){ potCarried += p.bet; p.bet = 0; } });
   curBet = 0;
   minRaise = curBlinds.bb;
-  players.forEach(p => { p.acted = false; p.blind = ''; });
+  players.forEach(p => { p.acted = false; });
 }
 function awardFoldWin(){
   const w = players.find(p => p.seated && !p.folded);
@@ -1278,14 +1339,53 @@ function clientDisconnected(){
   if(!net || net.mode !== 'client') return;
   showNetPanel('与房主的连接已断开', true);
 }
+function currentTurnLeftMs(){
+  if(net && net.mode === 'client'){
+    if(!clientTurnLeft || clientTurnLeft.ms <= 0) return 0;
+    return Math.max(0, clientTurnLeft.ms - (Date.now() - clientTurnLeft.at));
+  }
+  return turnDeadline ? Math.max(0, turnDeadline - Date.now()) : 0;
+}
+function renderTurnTimer(){
+  if(!players.length || curActor < 0 || !players[curActor] || !players[curActor].seated) return;
+  const left = currentTurnLeftMs();
+  const sec = Math.ceil(left / 1000);
+  const show = left > 0;
+  const len = players.length;
+  for(let k = 1; k <= len - 1; k++){
+    const p = players[(localIdx + k) % len];
+    const box = document.getElementById('opp-' + (k - 1));
+    if(!box) continue;
+    const tEl = box.querySelector('.otimer');
+    if(show && curActor === p.i){
+      tEl.style.display = 'inline-block';
+      tEl.textContent = sec + 's';
+      tEl.className = 'otimer' + (sec <= 10 ? ' low' : '');
+    }else{
+      tEl.style.display = 'none';
+    }
+  }
+  const mt = document.querySelector('#me-timer');
+  if(mt){
+    if(show && curActor === localIdx && localIdx >= 0){
+      mt.textContent = '剩余 ' + sec + ' 秒';
+      mt.className = 'mtimer' + (sec <= 10 ? ' low' : '');
+    }else{
+      mt.textContent = '';
+    }
+  }
+}
+setInterval(renderTurnTimer, 300);
 function snapshotFor(seat){
   return {
-    v: 2, yourSeat: seat,
+    v: 3, yourSeat: seat,
     started: gameRunning,
     waitingNext: !!nextHandResolver,
     over: overInfo,
     handNum, dealerIdx, curBlinds, curBet, minRaise, curActor, potCarried,
     stage: stageLabel, board: board,
+    turnLeft: turnDeadline ? Math.max(0, turnDeadline - Date.now()) : 0,
+    utg: utgIdx,
     spectCount: net.spectators ? net.spectators.length : 0,
     players: players.map(p => ({
       i: p.i, seated: p.seated, name: p.name, color: p.color, stack: p.stack, bet: p.bet,
@@ -1316,6 +1416,8 @@ function applySnapshot(s){
   stageLabel = s.stage || '';
   snapshotWaitingNext = !!s.waitingNext;
   pendingAction = false;
+  clientTurnLeft = {ms: s.turnLeft || 0, at: Date.now()};
+  utgIdx = (typeof s.utg === 'number') ? s.utg : -1;
   $('#stage-label').textContent = stageLabel;
   rebuildLog(s.logLines || []);
   if(document.querySelectorAll('.opp').length !== players.length - 1) buildOppSlots();
