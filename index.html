@@ -7,13 +7,15 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
-body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;color:#e8ecf1;overflow:hidden;user-select:none}
+body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);font-family:'Segoe UI','Microsoft YaHei','PingFang SC',sans-serif;color:#e8ecf1;overflow:hidden;user-select:none;touch-action:manipulation;overscroll-behavior:none}
 #stage-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 #stage{position:relative;width:480px;height:854px;display:flex;flex-direction:column;transform-origin:center;overflow:hidden}
 
 #hud{height:38px;display:flex;align-items:center;justify-content:space-between;padding:0 12px;font-size:12px;color:#93a3b3;background:rgba(8,12,18,.5);flex:none}
 #hud .hleft{display:flex;gap:10px;align-items:center;min-width:0}
-#hud .roomtag{color:#ffd97a;font-weight:700}
+#hud .roomtag{color:#ffd97a;font-weight:700;cursor:pointer;background:rgba(255,213,74,.12);border:1px dashed rgba(255,213,74,.5);border-radius:8px;padding:2px 10px;transition:background .15s}
+#hud .roomtag:hover{background:rgba(255,213,74,.25)}
+#hud .roomtag:active{background:rgba(255,213,74,.35)}
 #btn-log{background:#1c2733;border:1px solid rgba(255,255,255,.15);color:#c7d0da;font-size:12px;border-radius:8px;padding:3px 12px;cursor:pointer;font-family:inherit}
 #btn-log:active{background:#2a3a4a}
 
@@ -27,6 +29,16 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .opp .oname{font-size:12.5px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;min-width:0}
 .opp .obet{margin-top:3px;font-size:12px;color:#ffd97a;font-weight:700;min-height:15px}
 .opp .ocards{display:flex;gap:4px;margin-top:5px;height:47px;align-items:center;justify-content:center}
+.opp.empty .ocards{display:none}
+#opps.crowd{gap:6px;padding:8px 10px 2px}
+#opps.crowd .opp{padding:4px 6px}
+#opps.crowd .opp .avatar{width:22px;height:22px;font-size:11px}
+#opps.crowd .opp .oname{font-size:11.5px}
+#opps.crowd .opp .obet{font-size:11px;margin-top:2px}
+#opps.crowd .opp .ostack{font-size:11px}
+#opps.crowd .opp .ocards{height:44px;margin-top:3px}
+#opps.crowd .card.sc{width:32px;height:44px}
+#opps.crowd .card.sc .cb{font-size:16px}
 .opp .ostack{margin-left:auto;font-size:11.5px;color:#ffd97a;font-weight:800;flex:none}
 .opp .otags{display:flex;gap:4px;margin-top:3px;min-height:14px;flex-wrap:wrap}
 .otag{font-size:10px;font-weight:700;padding:0 6px;border-radius:6px;line-height:14px;background:#31465a;color:#cfe0ee}
@@ -48,7 +60,7 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .opp.folded .foldmark{display:flex}
 .opp.win{border-color:#5ce27a;box-shadow:0 0 0 2px rgba(92,226,122,.4),0 0 14px rgba(92,226,122,.45)}
 
-#center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;position:relative;min-height:170px}
+#center{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;min-height:150px}
 #felt-bg{position:absolute;inset:4px 14px;border-radius:26px;background:radial-gradient(130% 100% at 50% 30%,#2c7649 0%,#1c5735 60%,#164427 100%);box-shadow:inset 0 0 40px rgba(0,0,0,.45);z-index:0}
 #center>*{position:relative;z-index:1}
 #stage-label{font-size:11px;letter-spacing:3px;color:rgba(255,255,255,.55)}
@@ -84,7 +96,7 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .card.pop{animation:pop .3s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes pop{from{transform:translateY(-14px) scale(.6);opacity:0}to{transform:none;opacity:1}}
 
-#me{height:148px;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:none}
+#me{height:136px;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:none}
 #me-bet{min-height:22px;display:flex;align-items:center}
 .pill{background:linear-gradient(#ffd97a,#dfa436);color:#3a2604;font-weight:800;font-size:13px;padding:3px 12px;border-radius:12px;border:1.5px solid #8a6212;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 #me-cards{display:flex;gap:8px}
@@ -96,15 +108,26 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 #me-info .mtimer{font-size:13px;font-weight:800;color:#ffd97a}
 #me-info .mtimer.low{color:#e05252}
 .otag.memini{background:#31465a;color:#cfe0ee}
+.otag.off{background:#4a4055;color:#d9ccf5}
+#toast{position:absolute;top:46px;left:50%;transform:translateX(-50%);background:rgba(8,14,10,.95);border:1px solid rgba(255,215,120,.5);color:#ffe9ad;padding:8px 18px;border-radius:12px;font-size:13px;font-weight:700;z-index:30;opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:92%;overflow:hidden;text-overflow:ellipsis}
+#toast.show{opacity:1}
+#wait-tip{position:absolute;top:44px;left:50%;transform:translateX(-50%);background:rgba(10,16,12,.9);border:1px solid rgba(255,215,120,.35);color:#ffe9ad;padding:6px 16px;border-radius:12px;font-size:12.5px;font-weight:700;z-index:6;display:none;white-space:nowrap}
 #me-info .mtag{font-size:11px;color:#93a3b3}
 #me-spect{display:none;background:rgba(9,13,18,.8);border:1px dashed rgba(255,255,255,.2);border-radius:12px;padding:16px 30px;color:#93a3b3;font-size:13px}
 #me.spect #me-spect{display:block}
 #me.spect #me-cards,#me.spect #me-info,#me.spect #me-bet{display:none}
 
-#ab{height:146px;background:rgba(12,17,23,.97);border-top:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;padding:8px 12px;gap:8px;flex:none}
-#ab-info{font-size:12px;color:#93a3b3;text-align:center;height:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#ab{height:164px;background:rgba(12,17,23,.97);border-top:1px solid rgba(255,255,255,.09);display:flex;flex-direction:column;padding:8px 12px 10px;gap:8px;flex:none;transition:box-shadow .3s,background .3s}
+#ab.myturn{background:rgba(18,26,20,.98);box-shadow:0 -6px 28px rgba(255,213,74,.28)}
+#ab.myturn #ab-info{color:#ffd54a;font-weight:800;font-size:13px}
+#ab.myturn .btn:not(:disabled){animation:btnpulse 1.2s infinite}
+@keyframes btnpulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(255,213,74,.0)}
+  50%{box-shadow:0 0 14px 2px rgba(255,213,74,.35)}
+}
+#ab-info{font-size:12px;color:#93a3b3;text-align:center;height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #btnrow{display:flex;gap:10px}
-.btn{flex:1;border:none;border-radius:12px;padding:15px 0;font-size:17px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s,transform .05s}
+.btn{flex:1;border:none;border-radius:12px;padding:17px 0;font-size:18px;font-weight:700;cursor:pointer;font-family:inherit;transition:filter .15s,transform .05s}
 .btn:active:not(:disabled){transform:translateY(1px)}
 .btn:disabled{opacity:.35;cursor:default}
 .btn-fold{background:#7e2a33;color:#ffd9dd}
@@ -112,9 +135,9 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .btn-raise{background:#b8860b;color:#fff6df;flex:1.6;font-size:18px;box-shadow:0 3px 10px rgba(184,134,11,.35)}
 #raiserow{display:none;align-items:center;gap:8px}
 #raiserow.show{display:flex}
-#range{flex:1;accent-color:#ffd54a;height:30px}
+#range{flex:1;accent-color:#ffd54a;height:36px;touch-action:none}
 #range-val{font-size:14px;color:#ffd97a;font-weight:800;min-width:66px;text-align:right}
-.qp{background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:9px 0;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;flex:1}
+.qp{background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:10px;padding:14px 0;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;flex:1}
 .qp:active{background:#31404f}
 
 #log-panel{position:absolute;top:38px;bottom:0;left:0;right:0;background:rgba(6,9,13,.94);z-index:15;display:none;flex-direction:column;padding:10px 14px}
@@ -180,6 +203,8 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
       <span id="range-val">$0</span>
     </div>
   </div>
+  <div id="toast"></div>
+  <div id="wait-tip"></div>
   <div id="log-panel">
     <div id="log-head"><span>牌局记录</span><button id="btn-log-close" class="qp" style="flex:0 0 64px">关闭</button></div>
     <div id="log-body"></div>
@@ -570,6 +595,7 @@ function posTags(p){
   if(stageLabel === '翻牌前' && utgIdx === p.i && players.filter(x => x.seated && !x.elim).length >= 3)
     tags.push('<span class="otag utg">枪口</span>');
   if(p.allIn && !p.folded) tags.push('<span class="otag allin">全下</span>');
+  if(p.leaving) tags.push('<span class="otag off">离线</span>');
   return tags.join('');
 }
 function renderSlotCards(slots, p, big){
@@ -607,6 +633,7 @@ function myHandName(){
 function render(){
   if(!players.length){ renderActionBar(); return; }
   if(document.querySelectorAll('.opp').length !== players.length - 1) buildOppSlots();
+  $('#opps').classList.toggle('crowd', players.length - 1 >= 5);
   const len = players.length;
   for(let k = 1; k <= len - 1; k++){
     const p = players[(localIdx + k) % len];
@@ -661,8 +688,12 @@ function render(){
   $('#hud-hand').textContent = '第 ' + Math.max(handNum, 1) + ' 局';
   $('#hud-blind').textContent = '盲注 $' + curBlinds.sb + '/' + curBlinds.bb;
   const rt = $('#hud-room');
-  if(net && net.code){ rt.style.display = ''; rt.textContent = '房间 ' + net.code; }
+  if(net && net.code){ rt.style.display = ''; rt.textContent = '房间 ' + net.code; rt.title = '点击复制口令码'; }
   else rt.style.display = 'none';
+  const wt = $('#wait-tip');
+  const waitingNext = net && net.mode === 'client' && snapshotWaitingNext;
+  wt.style.display = waitingNext ? 'block' : 'none';
+  if(waitingNext) wt.textContent = '等待房主开始第 ' + (handNum + 1) + ' 局…';
   syncBoard();
   renderActionBar();
   netBroadcast();
@@ -672,6 +703,7 @@ function renderActionBar(){
   const p = localIdx >= 0 ? players[localIdx] : null;
   const info = $('#ab-info');
   const isTurn = !!p && p.seated && curActor === localIdx && !p.folded && p.stack > 0 && inHandCount() >= 2 && !overlayVisible() && !pendingAction;
+  $('#ab').classList.toggle('myturn', isTurn);
   const fold = $('#btn-fold'), call = $('#btn-call'), raise = $('#btn-raise');
   if(!isTurn){
     fold.disabled = true; call.disabled = true; raise.disabled = true;
@@ -1000,6 +1032,7 @@ async function endHand(){
     if(p.stack <= 0 && p.seated && !p.elim){ p.elim = true; log(N(p) + ' 出局'); }
   });
   players.forEach(p => { if(p.leaving){ log('<b style="color:#c7d0da">' + p.name + '</b> 离开了座位'); clearSeat(p); } });
+  promoteSpectators();
   render();
   await delay(2600);
   const alive = players.filter(p => p.seated && !p.elim);
@@ -1060,14 +1093,49 @@ function gameOverScreen(win){
   $('#btn-again').onclick = () => {
     hideOverlay();
     if(net && net.mode === 'host'){ resetGame(); runGame(); }
-    else{ startSolo(); }
+    else{ startSolo(getName('你')); }
   };
   render();
 }
-function promptName(def){
-  const n = (typeof prompt === 'function') ? prompt('输入你的昵称（同桌可见）', def || '玩家') : (def || '玩家');
-  return (n || def || '玩家').toString().trim().slice(0, 8) || '玩家';
+let toastTimer = null;
+function showToast(text){
+  const t = $('#toast');
+  t.textContent = text;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2000);
 }
+function fallbackCopy(t, done){
+  try{
+    const ta = document.createElement('textarea');
+    ta.value = t;
+    ta.style.position = 'fixed';
+    ta.style.opacity = '0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    document.body.removeChild(ta);
+    done();
+  }catch(e){ showToast(t); }
+}
+function copyText(t){
+  const done = () => showToast('已复制：' + t);
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(t).then(done).catch(() => fallbackCopy(t, done));
+  }else{
+    fallbackCopy(t, done);
+  }
+}
+function getName(def){
+  const el = document.querySelector('#inp-name');
+  let n = '';
+  if(el) n = (el.value || '').trim();
+  if(!n && typeof localStorage !== 'undefined'){
+    try{ n = (localStorage.getItem('thp-name') || '').trim(); }catch(e){}
+  }
+  return (n || def || '玩家').toString().slice(0, 8) || '玩家';
+}
+function promptName(){ return getName('玩家'); }
 function loadPeerJS(){
   return new Promise((res, rej) => {
     if(window.Peer) return res(window.Peer);
@@ -1119,7 +1187,7 @@ function initSeats(mode, myName){
     players = AI_DEFS.map((d, i) => {
       const s = blankSeat(i);
       s.seated = true; s.elim = false; s.folded = false;
-      s.name = i === 0 ? '你' : d.name;
+      s.name = i === 0 ? (myName || '你') : d.name;
       s.color = d.color; s.aggr = d.aggr || 0; s.tight = d.tight || 0;
       s.isAI = i !== 0;
       s.stack = 2500;
@@ -1176,10 +1244,10 @@ function resetGame(){
   syncBoard();
   render();
 }
-function startSolo(){
+function startSolo(name){
   net = null;
   hideOverlay();
-  initSeats('solo');
+  initSeats('solo', name || getName('你'));
   runGame();
 }
 async function createRoom(name){
@@ -1210,31 +1278,33 @@ function canJoin(){
   if(!gameRunning) return true;
   return !!nextHandResolver;
 }
+function seatRemotePlayer(conn, seatIdx){
+  conn.seat = seatIdx;
+  conn.name = (conn.name || '客人').toString().slice(0, 8);
+  const p = players[seatIdx];
+  p.seated = true; p.elim = false; p.folded = true;
+  p.remote = true;
+  p.name = conn.name;
+  p.color = SEAT_COLORS[seatIdx % SEAT_COLORS.length];
+  p.stack = 2500;
+  try{ conn.send({type:'welcome', seat:seatIdx}); }catch(e){}
+  net.conns.push(conn);
+  if(gameRunning){
+    log('<b style="color:' + p.color + '">' + p.name + '</b> 加入，下一局上场');
+  }
+}
 function hostHandleData(conn, d){
   if(!net || net.mode !== 'host' || !d) return;
   if(d.type === 'join'){
     if(conn.seat !== undefined) return;
-    if(!canJoin()){ try{ conn.send({type:'busy'}); }catch(e){} return; }
+    conn.name = (d.name || '客人').toString().slice(0, 8);
     const seatIdx = players.findIndex((p, i) => i > 0 && !p.seated);
     if(seatIdx === -1){
       conn.seat = -1;
-      conn.name = (d.name || '观众').toString().slice(0, 8);
       net.spectators.push(conn);
       try{ conn.send({type:'welcome', seat:-1, spectator:true}); }catch(e){}
     }else{
-      conn.seat = seatIdx;
-      conn.name = (d.name || '客人').toString().slice(0, 8);
-      const p = players[seatIdx];
-      p.seated = true; p.elim = false; p.folded = true;
-      p.remote = true;
-      p.name = conn.name;
-      p.color = SEAT_COLORS[seatIdx % SEAT_COLORS.length];
-      p.stack = 2500;
-      try{ conn.send({type:'welcome', seat:seatIdx}); }catch(e){}
-      net.conns.push(conn);
-      if(gameRunning){
-        log('<b style="color:' + p.color + '">' + p.name + '</b> 加入，下一局上场');
-      }
+      seatRemotePlayer(conn, seatIdx);
     }
     render();
     refreshHostLobby();
@@ -1243,6 +1313,17 @@ function hostHandleData(conn, d){
       pendingRemote[conn.seat](d.a);
     }
   }
+}
+function promoteSpectators(){
+  if(!net || net.mode !== 'host' || !net.spectators || !net.spectators.length) return;
+  const before = net.spectators.length;
+  net.spectators = net.spectators.filter(conn => {
+    const seatIdx = players.findIndex((p, i) => i > 0 && !p.seated);
+    if(seatIdx === -1) return true;
+    seatRemotePlayer(conn, seatIdx);
+    return false;
+  });
+  if(net.spectators.length < before) render();
 }
 function hostDropConn(conn){
   if(!net || net.mode !== 'host') return;
@@ -1291,12 +1372,9 @@ function refreshHostLobby(){
     (canStart ? '开始牌局（' + seated.length + ' 人在座）' : '等待玩家加入（至少 2 人）') +
     '</button>' +
     '</div>';
-  $('#btn-copy').onclick = () => {
-    try{
-      navigator.clipboard.writeText(net.code).then(() => { $('#btn-copy').textContent = '已复制：' + net.code; });
-    }catch(e){ $('#btn-copy').textContent = net.code; }
-  };
+  $('#btn-copy').onclick = () => { copyText(net.code); };
   $('#btn-start-net').onclick = () => {
+    promoteSpectators();
     if(players.filter(p => p.seated).length < 2) return;
     hideOverlay();
     resetGame();
@@ -1314,7 +1392,7 @@ async function joinRoom(name, code){
     const failTimer = setTimeout(() => showNetPanel('连接超时：检查口令码与网络', true), 15000);
     conn.on('open', () => {
       clearTimeout(failTimer);
-      net = {mode:'client', peer, conn, code, seat:undefined};
+      net = {mode:'client', peer, conn, code, seat:undefined, myName:name};
       try{ conn.send({type:'join', name}); }catch(e){}
     });
     conn.on('data', d => clientHandleData(d));
@@ -1331,13 +1409,30 @@ function clientHandleData(d){
     showClientWaiting();
   }else if(d.type === 'state'){
     applySnapshot(d.s);
-  }else if(d.type === 'busy'){
-    showNetPanel('牌局进行中，请稍后重试加入', true);
   }
 }
 function clientDisconnected(){
   if(!net || net.mode !== 'client') return;
-  showNetPanel('与房主的连接已断开', true);
+  const name = net.myName || getName('玩家');
+  const code = net.code;
+  const ov = $('#overlay');
+  ov.classList.remove('hide');
+  ov.innerHTML = '<div class="ovcard">' +
+    '<h2>连接断开</h2>' +
+    '<p>与房间 <b>' + code + '</b> 的连接已断开</p>' +
+    '<button class="btn bigbtn" id="btn-reconn">重新连接</button>' +
+    '<button class="btn bigbtn" id="btn-back-home">返回首页</button>' +
+    '</div>';
+  $('#btn-reconn').onclick = () => {
+    try{ net.peer && net.peer.destroy(); }catch(e){}
+    net = null;
+    if(name && code) joinRoom(name, code);
+  };
+  $('#btn-back-home').onclick = () => {
+    try{ net.peer && net.peer.destroy(); }catch(e){}
+    net = null;
+    showStartOverlay();
+  };
 }
 function currentTurnLeftMs(){
   if(net && net.mode === 'client'){
@@ -1439,7 +1534,7 @@ function showClientWaiting(){
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>' + (localIdx < 0 ? '已加入（观战）' : '已加入房间 ' + (net && net.code || '')) + '</h2>' +
     '<div class="seatlist">' + rows + '</div>' +
-    '<p class="dim">' + (localIdx < 0 ? '房间满座，当前观战中；有人离座后可重新加入' : '房主开始牌局后自动进入 · 你的座位在下方') + '</p>' +
+    '<p class="dim">' + (localIdx < 0 ? '当前观战中 · 出现空位时下一局自动上场' : '房主开始牌局后自动进入 · 你的座位在下方') + '</p>' +
     '</div>';
 }
 function showClientOver(over){
@@ -1454,31 +1549,45 @@ function showClientOver(over){
 function showStartOverlay(){
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  let saved = '';
+  try{ saved = (localStorage.getItem('thp-name') || '').trim(); }catch(e){}
   ov.innerHTML = '<div class="ovcard">' +
     '<h1>德州扑克</h1>' +
     '<p>无限注德州扑克 · 单机或口令码联机<br>起始筹码 $2500 · 盲注 $25/$50（每 8 局升级）</p>' +
+    '<div class="joinrow">' +
+      '<input id="inp-name" maxlength="8" placeholder="你的昵称（同桌可见）" value="' + saved.replace(/"/g, '') + '">' +
+    '</div>' +
     '<button class="btn bigbtn" id="btn-solo">单机对战 AI</button>' +
     '<button class="btn bigbtn" id="btn-host">创建联机房间</button>' +
     '<div class="joinrow">' +
-      '<input id="inp-code" maxlength="5" placeholder="口令码">' +
+      '<input id="inp-code" maxlength="5" placeholder="口令码" inputmode="latin" autocomplete="off">' +
       '<button class="btn bigbtn" id="btn-join" style="margin-top:0">加入房间</button>' +
     '</div>' +
-    '<p class="dim">创建房间后把 5 位口令码发给好友<br>不限人数：满 8 个座位后新加入者可观战<br>联机需双方都能访问外网</p>' +
+    '<p class="dim">创建房间后把 5 位口令码发给好友<br>牌局进行中也可加入：有空位下一局上场，满座可观战<br>联机需双方都能访问外网</p>' +
     '<div id="net-status" class="netstatus"></div>' +
     '</div>';
-  $('#btn-solo').onclick = () => { startSolo(); };
-  $('#btn-host').onclick = () => { const n = promptName('房主'); createRoom(n); };
+  const nameEl = $('#inp-name'), codeEl = $('#inp-code');
+  nameEl.oninput = () => {
+    try{ localStorage.setItem('thp-name', (nameEl.value || '').trim()); }catch(e){}
+  };
+  codeEl.oninput = () => {
+    codeEl.value = (codeEl.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+  };
+  nameEl.onkeydown = e => { if(e.key === 'Enter'){ codeEl.focus(); } };
+  codeEl.onkeydown = e => { if(e.key === 'Enter'){ $('#btn-join').click(); } };
+  $('#btn-solo').onclick = () => { startSolo(getName('你')); };
+  $('#btn-host').onclick = () => { createRoom(getName('房主')); };
   $('#btn-join').onclick = () => {
-    const code = ($('#inp-code').value || '').trim().toUpperCase();
+    const code = (codeEl.value || '').trim().toUpperCase();
     if(code.length < 4){ $('#net-status').textContent = '请输入完整口令码'; return; }
-    const n = promptName('玩家');
-    joinRoom(n, code);
+    joinRoom(getName('玩家'), code);
   };
 }
 if(typeof window !== 'undefined'){
   window.__api = {
     hostHandleData, hostDropConn, snapshotFor, applySnapshot, waitRemoteAction,
     canJoin, netBroadcast, initSeats, resetGame, runGame, startSolo, clearSeat,
+    promoteSpectators, seatRemotePlayer, copyText, showToast, refreshHostLobby, render,
     players: () => players, net: () => net,
     setNet(n){ net = n; },
     setCurActor(i){ curActor = i; },
@@ -1527,6 +1636,7 @@ document.querySelectorAll('#raiserow .qp').forEach(b => {
 });
 $('#btn-log').onclick = () => { $('#log-panel').classList.add('show'); };
 $('#btn-log-close').onclick = () => { $('#log-panel').classList.remove('show'); };
+$('#hud-room').onclick = () => { if(net && net.code) copyText(net.code); };
 window.addEventListener('load', () => {
   scaleStage();
   showStartOverlay();
