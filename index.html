@@ -37,6 +37,7 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .otag.allin{background:#c8952c;color:#241a05}
 .otag.fold{background:#4a3232;color:#d9b0b0}
 .otag.off{background:#4a4055;color:#d9ccf5}
+.otag.host{background:#7e6a1f;color:#fff6df}
 .opp.turn{border-color:#ffd54a;animation:oppulse 1.5s infinite}
 @keyframes oppulse{
   0%,100%{box-shadow:0 0 0 2px rgba(255,213,74,.25),0 0 10px rgba(255,213,74,.25)}
@@ -243,6 +244,9 @@ let nextHandResolver = null;
 let bannerTimer = null;
 let net = null;
 let localIdx = 0;
+let hostIdx = 0;
+let lastSnapshot = null;
+let migrating = null;
 let pendingRemote = {};
 let pendingAction = false;
 let gameRunning = false;
@@ -254,6 +258,7 @@ let turnDeadline = 0;
 let utgIdx = -1;
 let clientTurnLeft = null;
 const TURN_MS = 30000;
+const OFFLINE_MS = 4000;
 const delay = ms => new Promise(r => setTimeout(r, ms * ((typeof window !== 'undefined' && window.__speed) || 1)));
 function beep(f, d, g){
   g = g || 0.05;
@@ -370,7 +375,7 @@ function blindSize(){
 }
 function blankSeat(i){
   return {
-    i, seated:false, remote:false, isAI:false, leaving:false,
+    i, seated:false, remote:false, isAI:false, offline:false, peerId:'',
     name:'', color:'#7f909f', stack:0, hand:[], bet:0, totalBet:0,
     folded:true, allIn:false, acted:false, elim:true, blind:'', win:false,
     revealed:false, handHidden:false, aggr:0, tight:0
@@ -612,6 +617,7 @@ function buildOppSlots(){
 }
 function posTags(p){
   const tags = [];
+  if(hostIdx === p.i && p.seated && !p.elim) tags.push('<span class="otag host">房主</span>');
   if(dealerIdx === p.i) tags.push('<span class="otag dealer">庄</span>');
   if(p.blind === '小盲') tags.push('<span class="otag blind">小盲</span>');
   if(p.blind === '大盲') tags.push('<span class="otag blind">大盲</span>');
@@ -619,7 +625,7 @@ function posTags(p){
     tags.push('<span class="otag utg">枪口</span>');
   if(p.allIn && !p.folded) tags.push('<span class="otag allin">全下</span>');
   if(p.folded && p.seated && !p.elim && p.i !== localIdx) tags.push('<span class="otag fold">弃</span>');
-  if(p.leaving) tags.push('<span class="otag off">离线</span>');
+  if(p.offline && p.seated && !p.elim) tags.push('<span class="otag off">离线</span>');
   return tags.join('');
 }
 function renderSlotCards(slots, p, big){
@@ -883,7 +889,7 @@ async function bettingRound(){
       }
       applyAction(curActor, a);
     }else if(ctl === 'remote'){
-      const a = await waitRemoteAction(curActor, TURN_MS);
+      const a = await waitRemoteAction(curActor, players[curActor].offline ? OFFLINE_MS : TURN_MS);
       applyAction(curActor, a);
     }else{
       await delay(600 + Math.random() * 800);
@@ -1039,25 +1045,50 @@ async function playHand(){
   return endHand();
 }
 function clearSeat(p){
-  p.seated = false; p.remote = false; p.leaving = false;
+  p.seated = false; p.remote = false;
   p.elim = true; p.stack = 0; p.hand = []; p.bet = 0; p.totalBet = 0;
   p.folded = true; p.allIn = false; p.win = false; p.revealed = false;
-  p.name = ''; p.blind = '';
+  p.name = ''; p.blind = ''; p.offline = false; p.peerId = '';
+}
+function pickNewHost(){
+  const alive = players.filter(p => p.seated && !p.elim);
+  if(!alive.length) return -1;
+  const top = Math.max.apply(null, alive.map(p => p.stack));
+  const tied = alive.filter(p => p.stack === top);
+  return tied[Math.floor(Math.random() * tied.length)].i;
+}
+function transferHostIfNeeded(){
+  if(!net || net.mode !== 'host') return false;
+  const alive = players.filter(p => p.seated && !p.elim);
+  if(alive.length < 2) return false;
+  const hp = players[hostIdx];
+  if(hp && hp.seated && !hp.elim) return false;
+  const ni = pickNewHost();
+  if(ni < 0) return false;
+  hostIdx = ni;
+  const nh = players[ni];
+  log(N(nh) + ' 接替成为新房主（筹码 $' + nh.stack + '）');
+  banner(nh.name + ' 接替为新房主，游戏自动继续', 3400);
+  return true;
 }
 async function endHand(){
   curActor = -1;
   players.forEach(p => {
     if(p.stack <= 0 && p.seated && !p.elim){ p.elim = true; log(N(p) + ' 出局'); }
   });
-  players.forEach(p => { if(p.leaving){ log('<b style="color:#c7d0da">' + p.name + '</b> 离开了座位'); clearSeat(p); } });
+  players.forEach(p => { if(p.seated && p.elim && p.offline){ log(N(p) + ' 已出局离场，座位空出'); clearSeat(p); } });
+  transferHostIfNeeded();
   promoteSpectators();
   render();
   await delay(2600);
   const alive = players.filter(p => p.seated && !p.elim);
   if(net && net.mode === 'host'){
     if(alive.length <= 0){ gameOverScreen(false); return 'over'; }
-    if(alive.length === 1 && alive[0].i === 0){ gameOverScreen(true); return 'over'; }
-    if(!players[0].seated || players[0].elim){ gameOverScreen(false); return 'over'; }
+    if(alive.length === 1){ gameOverScreen(alive[0].i === localIdx); return 'over'; }
+    if(!players[localIdx] || !players[localIdx].seated || players[localIdx].elim){
+      await delay(500);
+      return 'next';
+    }
   }else{
     if(!players[0].seated || players[0].elim){ gameOverScreen(false); return 'over'; }
     if(alive.length === 1){ gameOverScreen(true); return 'over'; }
@@ -1075,12 +1106,12 @@ async function runGame(){
     if(r !== 'next') break;
   }
 }
-function showNextHandOverlay(){
+function showNextHandOverlay(onStart){
   if(net && net.mode === 'client') return;
   const ov = $('#overlay');
   ov.classList.remove('hide');
   const rows = players.filter(p => p.seated).map(p =>
-    '<span><b style="color:' + p.color + '">' + p.name + '</b>　$' + p.stack + (p.elim ? '（出局）' : '') + '</span>'
+    '<span><b style="color:' + p.color + '">' + p.name + '</b>　$' + p.stack + (p.elim ? '（出局）' : '') + (p.offline ? '（离线）' : '') + '</span>'
   ).join('');
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>第 ' + handNum + ' 局结束</h2>' +
@@ -1092,6 +1123,7 @@ function showNextHandOverlay(){
     nextHandResolver = null;
     hideOverlay();
     if(r) r();
+    if(onStart) onStart();
   };
 }
 function waitForNextHand(){
@@ -1099,13 +1131,16 @@ function waitForNextHand(){
 }
 function gameOverScreen(win){
   gameRunning = false;
-  overInfo = {win, hands: handNum, winner: players.filter(p => p.seated && !p.elim).map(p => p.name).join('、')};
+  const aliveP = players.filter(p => p.seated && !p.elim);
+  overInfo = {win, hands: handNum, winner: aliveP.map(p => p.name).join('、')};
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  const winnerLine = (!win && aliveP.length === 1) ? '<p><b style="color:#ffd97a">' + aliveP[0].name + '</b> 赢下了整场对局</p>' : '';
   ov.innerHTML = '<div class="ovcard">' +
     '<h1>' + (win ? '你赢了！' : '游戏结束') + '</h1>' +
+    winnerLine +
     '<p>' + (win ? '其他牌手全部出局，这场对局由你拿下。' : '你的筹码用完了，再接再厉！') + '</p>' +
-    '<p class="dim">共进行 ' + handNum + ' 局 · 你的剩余筹码 $' + (players[0] && players[0].seated ? players[0].stack : 0) + '</p>' +
+    '<p class="dim">共进行 ' + handNum + ' 局 · 你的剩余筹码 $' + (players[localIdx] && players[localIdx].seated ? players[localIdx].stack : 0) + '</p>' +
     '<button class="btn bigbtn" id="btn-again">重新开始</button>' +
     '</div>';
   $('#btn-again').onclick = () => {
@@ -1178,6 +1213,26 @@ function genCode(){
   for(let i = 0; i < 5; i++) c += chars[Math.floor(Math.random() * chars.length)];
   return c;
 }
+function lsGet(k){
+  try{ if(typeof localStorage !== 'undefined') return localStorage.getItem(k); }catch(e){}
+  return (window.__ls || (window.__ls = {}))[k] || null;
+}
+function lsSet(k, v){
+  try{ if(typeof localStorage !== 'undefined'){ localStorage.setItem(k, v); return; } }catch(e){}
+  window.__ls = window.__ls || {}; window.__ls[k] = v;
+}
+function genGuestId(code){
+  const chars = 'abcdefghjkmnpqrstuvwxyz23456789';
+  let s = '';
+  for(let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
+  return 'thpoker-u-' + code + '-' + s;
+}
+function loadGuestId(code){
+  const k = 'thpoker-peer-' + code;
+  let v = lsGet(k);
+  if(!v){ v = genGuestId(code); lsSet(k, v); }
+  return v;
+}
 function peerErrText(err){
   const t = err && err.type;
   if(t === 'peer-unavailable') return '找不到该房间';
@@ -1225,6 +1280,7 @@ function initSeats(mode, myName){
     }
   }
   localIdx = 0;
+  hostIdx = 0;
   handNum = 0;
   dealerIdx = -1;
   curActor = -1;
@@ -1251,9 +1307,10 @@ function resetGame(){
     if(p.seated){
       p.stack = 2500; p.elim = false; p.hand = []; p.bet = 0; p.totalBet = 0;
       p.folded = false; p.allIn = false; p.acted = false; p.blind = '';
-      p.win = false; p.revealed = false; p.leaving = false;
+      p.win = false; p.revealed = false;
     }
   });
+  hostIdx = 0;
   handNum = 0;
   dealerIdx = -1;
   curActor = -1;
@@ -1285,6 +1342,7 @@ async function createRoom(name){
     opened = true;
     net = {mode:'host', peer, code, conns:[], spectators:[], hostName:name};
     initSeats('host', name);
+    players[0].peerId = loadGuestId(code);
     refreshHostLobby();
   });
   peer.on('error', err => {
@@ -1307,27 +1365,45 @@ function seatRemotePlayer(conn, seatIdx){
   const p = players[seatIdx];
   p.seated = true; p.elim = false; p.folded = true;
   p.remote = true;
+  p.offline = false;
   p.name = conn.name;
   p.color = SEAT_COLORS[seatIdx % SEAT_COLORS.length];
   p.stack = 2500;
+  p.peerId = conn.peer || '';
   try{ conn.send({type:'welcome', seat:seatIdx}); }catch(e){}
   net.conns.push(conn);
   if(gameRunning){
     log('<b style="color:' + p.color + '">' + p.name + '</b> 加入，下一局上场');
   }
 }
+function reconnectSeat(conn, seatIdx){
+  net.conns.forEach(c => { if(c !== conn && c.seat === seatIdx) c.seat = undefined; });
+  net.conns = net.conns.filter(c => c.seat !== undefined);
+  conn.seat = seatIdx;
+  conn.name = players[seatIdx].name;
+  players[seatIdx].offline = false;
+  try{ conn.send({type:'welcome', seat:seatIdx}); }catch(e){}
+  net.conns.push(conn);
+  log(N(players[seatIdx]) + ' 重新连接，回到原座位');
+}
 function hostHandleData(conn, d){
   if(!net || net.mode !== 'host' || !d) return;
   if(d.type === 'join'){
     if(conn.seat !== undefined) return;
     conn.name = (d.name || '客人').toString().slice(0, 8);
-    const seatIdx = players.findIndex((p, i) => i > 0 && !p.seated);
-    if(seatIdx === -1){
-      conn.seat = -1;
-      net.spectators.push(conn);
-      try{ conn.send({type:'welcome', seat:-1, spectator:true}); }catch(e){}
+    const peerId = conn.peer || '';
+    const mIdx = peerId ? players.findIndex((p, i) => i !== localIdx && p.seated && p.remote && p.peerId === peerId) : -1;
+    if(mIdx >= 0){
+      reconnectSeat(conn, mIdx);
     }else{
-      seatRemotePlayer(conn, seatIdx);
+      const seatIdx = players.findIndex((p, i) => i !== localIdx && !p.seated);
+      if(seatIdx === -1){
+        conn.seat = -1;
+        net.spectators.push(conn);
+        try{ conn.send({type:'welcome', seat:-1, spectator:true}); }catch(e){}
+      }else{
+        seatRemotePlayer(conn, seatIdx);
+      }
     }
     render();
     refreshHostLobby();
@@ -1341,7 +1417,7 @@ function promoteSpectators(){
   if(!net || net.mode !== 'host' || !net.spectators || !net.spectators.length) return;
   const before = net.spectators.length;
   net.spectators = net.spectators.filter(conn => {
-    const seatIdx = players.findIndex((p, i) => i > 0 && !p.seated);
+    const seatIdx = players.findIndex((p, i) => i !== localIdx && !p.seated);
     if(seatIdx === -1) return true;
     seatRemotePlayer(conn, seatIdx);
     return false;
@@ -1357,29 +1433,25 @@ function hostDropConn(conn){
     return;
   }
   net.conns = net.conns.filter(c => c !== conn);
-  if(conn.seat !== undefined && conn.seat > 0){
+  if(conn.seat !== undefined && conn.seat >= 0){
     const p = players[conn.seat];
-    if(p && p.seated && p.remote){
-      if(canJoin()){
-        log('<b style="color:#c7d0da">' + p.name + '</b> 离开了座位');
-        clearSeat(p);
-      }else{
-        p.leaving = true;
-        if(pendingRemote[conn.seat]) pendingRemote[conn.seat]({t:'fold'});
-      }
+    if(p && p.seated && p.remote && p.peerId === (conn.peer || '')){
+      p.offline = true;
+      if(pendingRemote[conn.seat]) pendingRemote[conn.seat]({t:'fold', remoteTimeout:true});
+      log(N(p) + ' 掉线，座位保留等待重连');
     }
   }
   render();
   refreshHostLobby();
 }
 function refreshHostLobby(){
-  if(!net || net.mode !== 'host' || gameRunning) return;
+  if(!net || net.mode !== 'host' || gameRunning || nextHandResolver) return;
   const ov = $('#overlay');
   ov.classList.remove('hide');
   const seated = players.filter(p => p.seated);
   const seatRows = players.map((p, i) => {
-    if(i === 0) return '<span><b style="color:' + p.color + '">' + (net.hostName || '房主') + '</b><span>房主 · 就绪</span></span>';
-    if(p.seated) return '<span><b style="color:' + p.color + '">' + p.name + '</b><span>已入座</span></span>';
+    if(i === localIdx) return '<span><b style="color:' + p.color + '">' + (net.hostName || '房主') + '</b><span>房主 · 就绪</span></span>';
+    if(p.seated) return '<span><b style="color:' + p.color + '">' + p.name + '</b><span>' + (p.offline ? '离线等待重连' : '已入座') + '</span></span>';
     return '<span><b style="color:#7f909f">空位 ' + i + '</b><span>等待加入</span></span>';
   }).join('');
   const spect = net.spectators.length;
@@ -1404,31 +1476,65 @@ function refreshHostLobby(){
     runGame();
   };
 }
-async function joinRoom(name, code){
-  showNetPanel('正在连接房间 ' + code + ' …');
+async function joinRoom(name, code, opts){
+  opts = opts || {};
+  if(!opts.quiet) showNetPanel('正在连接房间 ' + code + ' …');
   let Peer;
   try{ Peer = await loadPeerJS(); }
-  catch(e){ showNetPanel('' + (e.message || e), true); return; }
-  const peer = new Peer();
+  catch(e){ if(!opts.quiet) showNetPanel('' + (e.message || e), true); return; }
+  const peer = new Peer(loadGuestId(code));
+  let opened = false;
   peer.on('open', () => {
-    const conn = peer.connect('thpoker-' + code, {reliable:true});
-    const failTimer = setTimeout(() => showNetPanel('连接超时：检查口令码与网络', true), 15000);
-    conn.on('open', () => {
-      clearTimeout(failTimer);
-      net = {mode:'client', peer, conn, code, seat:undefined, myName:name};
-      try{ conn.send({type:'join', name}); }catch(e){}
-    });
-    conn.on('data', d => clientHandleData(d));
-    conn.on('close', () => clientDisconnected());
-    conn.on('error', () => clientDisconnected());
+    if(opened) return;
+    opened = true;
+    connectRoom(peer, name, code, opts, 0);
   });
-  peer.on('error', err => showNetPanel('加入失败：' + peerErrText(err), true));
+  peer.on('error', err => {
+    if(opened) return;
+    opened = true;
+    try{ peer.destroy(); }catch(e){}
+    if(err.type === 'unavailable-id'){
+      if(!opts.reid){
+        setTimeout(() => joinRoom(name, code, Object.assign({}, opts, {reid:1})), 3000);
+      }else if(!opts.reid2){
+        lsSet('thpoker-peer-' + code, genGuestId(code));
+        setTimeout(() => joinRoom(name, code, Object.assign({}, opts, {reid2:1})), 1500);
+      }else if(!opts.quiet){
+        showNetPanel('加入失败：' + peerErrText(err), true);
+      }
+    }else if(!opts.quiet){
+      showNetPanel('加入失败：' + peerErrText(err), true);
+    }
+  });
+}
+function connectRoom(peer, name, code, opts, n){
+  const conn = peer.connect('thpoker-' + code, {reliable:true});
+  let opened = false;
+  function fallback(){
+    net = {mode:'client', peer, conn:null, code, seat:undefined, myName:name};
+    clientDisconnected();
+  }
+  function retry(){
+    if(conn.open === false || !opened) setTimeout(() => connectRoom(peer, name, code, opts, n + 1), 3000);
+  }
+  const failTimer = setTimeout(() => { if(!opened){ if(n >= 2){ fallback(); } else { try{ conn.close(); }catch(e){} retry(); } } }, 6000);
+  conn.on('open', () => {
+    if(opened) return;
+    opened = true;
+    clearTimeout(failTimer);
+    net = {mode:'client', peer, conn, code, seat:undefined, myName:name};
+    try{ conn.send({type:'join', name}); }catch(e){}
+  });
+  conn.on('data', d => { if(!net || net.conn === conn) clientHandleData(d); });
+  conn.on('close', () => { clearTimeout(failTimer); if(opened) clientDisconnected(); });
+  conn.on('error', () => { clearTimeout(failTimer); if(!opened){ if(n >= 2){ fallback(); } else retry(); } });
 }
 function clientHandleData(d){
   if(!d || !net || net.mode !== 'client') return;
   if(d.type === 'welcome'){
     net.seat = d.seat;
     net.spectator = !!d.spectator;
+    migrating = null;
     showClientWaiting();
   }else if(d.type === 'state'){
     applySnapshot(d.s);
@@ -1436,26 +1542,204 @@ function clientHandleData(d){
 }
 function clientDisconnected(){
   if(!net || net.mode !== 'client') return;
-  const name = net.myName || getName('玩家');
-  const code = net.code;
+  startMigration();
+}
+function showMigratePanel(text, fatal){
   const ov = $('#overlay');
   ov.classList.remove('hide');
   ov.innerHTML = '<div class="ovcard">' +
-    '<h2>连接断开</h2>' +
-    '<p>与房间 <b>' + code + '</b> 的连接已断开</p>' +
-    '<button class="btn bigbtn" id="btn-reconn">重新连接</button>' +
+    '<h2>' + (fatal ? '连接失败' : '房间恢复') + '</h2>' +
+    '<p>' + text + '</p>' +
+    (fatal ? '' : '<p class="dim">恢复过程自动进行，无需操作，请稍候…</p>') +
     '<button class="btn bigbtn" id="btn-back-home">返回首页</button>' +
     '</div>';
-  $('#btn-reconn').onclick = () => {
-    try{ net.peer && net.peer.destroy(); }catch(e){}
-    net = null;
-    if(name && code) joinRoom(name, code);
-  };
   $('#btn-back-home').onclick = () => {
-    try{ net.peer && net.peer.destroy(); }catch(e){}
+    if(migrating){ migrating.cancelled = true; migrating = null; }
+    if(net){ try{ net.peer && net.peer.destroy(); }catch(e){} }
     net = null;
+    lastSnapshot = null;
+    hideOverlay();
     showStartOverlay();
   };
+}
+function pickHostCandidate(snap){
+  const alive = (snap.players || []).filter(p => p.seated && !p.elim && p.i !== snap.hostIdx);
+  if(!alive.length) return -1;
+  const top = Math.max.apply(null, alive.map(p => p.stack));
+  const tied = alive.filter(p => p.stack === top);
+  if(tied.length === 1) return tied[0].i;
+  const seedStr = snap.handNum + '|' + snap.dealerIdx + '|' + alive.map(p => p.stack + ':' + p.i).join(',');
+  let h = 2166136261;
+  for(let k = 0; k < seedStr.length; k++){
+    h ^= seedStr.charCodeAt(k);
+    h = Math.imul(h, 16777619);
+  }
+  return tied[(h >>> 0) % tied.length].i;
+}
+async function startMigration(){
+  if(!net || net.mode !== 'client') return;
+  if(migrating) return;
+  const info = {code: net.code, myName: net.myName || getName('玩家'), mySeat: localIdx, snap: lastSnapshot, tries: 0, role: 'reconnect', cancelled: false};
+  migrating = info;
+  showMigratePanel('与房主的连接已断开，正在自动恢复房间…');
+  const snap = info.snap;
+  const cand = (snap && snap.started && !snap.over) ? pickHostCandidate(snap) : -1;
+  if(cand === info.mySeat && info.mySeat >= 0){
+    info.role = 'takeover';
+    showMigratePanel('你是新房主人选（场上筹码最高），正在接管房间…');
+    await delay(4000);
+  }else{
+    await delay(5000);
+  }
+  if(migrating !== info || info.cancelled) return;
+  if(info.role === 'takeover') tryTakeover(info, 0);
+  else migrateReconnect(info);
+}
+async function tryTakeover(info, n){
+  if(migrating !== info || info.cancelled) return;
+  let Peer;
+  try{ Peer = await loadPeerJS(); }
+  catch(e){ showMigratePanel('' + (e.message || e), true); return; }
+  showMigratePanel('正在接管房间（第 ' + (n + 1) + ' 次尝试）…');
+  const peer = new Peer('thpoker-' + info.code);
+  let settled = false;
+  const t = setTimeout(() => {
+    if(settled) return;
+    settled = true;
+    try{ peer.destroy(); }catch(e){}
+    if(migrating === info && n < 6) setTimeout(() => tryTakeover(info, n + 1), 2000);
+  }, 12000);
+  peer.on('open', () => {
+    if(settled){ try{ peer.destroy(); }catch(e){} return; }
+    settled = true;
+    clearTimeout(t);
+    takeoverAsHost(peer, info);
+  });
+  peer.on('error', async err => {
+    if(settled) return;
+    settled = true;
+    clearTimeout(t);
+    try{ peer.destroy(); }catch(e){}
+    if(n < 6){
+      await delay(err.type === 'unavailable-id' ? 4000 : 5000);
+      if(migrating === info && !info.cancelled) tryTakeover(info, n + 1);
+    }else{
+      info.role = 'reconnect';
+      info.tries = 0;
+      migrateReconnect(info);
+    }
+  });
+}
+function takeoverAsHost(peer, info){
+  const snap = info.snap;
+  if(net && net.peer && net.peer !== peer){ try{ net.peer.destroy(); }catch(e){} }
+  migrating = null;
+  net = {mode:'host', peer, code: info.code, conns:[], spectators:[], hostName: info.myName};
+  localIdx = info.mySeat;
+  hostIdx = info.mySeat;
+  const refunded = (snap.players || []).some(q => q.bet > 0) || (snap.potCarried | 0) > 0;
+  players = [];
+  for(let i = 0; i < MAX_SEATS; i++){
+    const s = blankSeat(i);
+    const q = (snap.players || []).find(x => x.i === i);
+    if(q && q.seated){
+      s.seated = true;
+      s.elim = q.elim;
+      s.name = q.name;
+      s.color = q.color;
+      s.stack = q.stack + (refunded ? (q.totalBet || 0) : 0);
+      s.folded = true;
+      s.remote = i !== localIdx;
+      s.offline = s.remote && !s.elim;
+      s.peerId = q.peerId || '';
+    }
+    if(i === localIdx){ s.remote = false; s.offline = false; }
+    players.push(s);
+  }
+  handNum = snap.handNum || 0;
+  dealerIdx = (typeof snap.dealerIdx === 'number') ? snap.dealerIdx : -1;
+  curBlinds = snap.curBlinds || blindSize();
+  curBet = 0;
+  minRaise = curBlinds.bb;
+  potCarried = 0;
+  curActor = -1;
+  utgIdx = -1;
+  board = [];
+  stageLabel = '';
+  turnDeadline = 0;
+  overInfo = null;
+  snapshotWaitingNext = false;
+  pendingAction = false;
+  logLines = (snap.logLines || []).slice();
+  rebuildLog(logLines);
+  log('<span class="sep">— ' + N(players[localIdx]) + ' 接管房间' + (refunded ? '，第 ' + handNum + ' 局作废并退还下注' : '') + ' —</span>');
+  banner('你已接管房间，点击开始按钮继续对局', 3400);
+  peer.on('connection', conn => {
+    conn.on('data', d => hostHandleData(conn, d));
+    conn.on('close', () => hostDropConn(conn));
+    conn.on('error', () => hostDropConn(conn));
+  });
+  buildOppSlots();
+  syncBoard();
+  setStage('');
+  render();
+  waitForNextHand();
+  showNextHandOverlay(() => runGame());
+}
+async function migrateReconnect(info){
+  while(migrating === info && !info.cancelled){
+    showMigratePanel('正在重连房间 ' + info.code + ' …');
+    let Peer;
+    try{ Peer = await loadPeerJS(); }
+    catch(e){ showMigratePanel('' + (e.message || e), true); return; }
+    let peer = (net && net.peer && !net.peer.destroyed) ? net.peer : null;
+    if(!peer){
+      peer = new Peer(loadGuestId(info.code));
+      const ok = await new Promise(res => {
+        const t = setTimeout(() => res(true), 8000);
+        peer.on('open', () => { clearTimeout(t); res(true); });
+        peer.on('error', () => { clearTimeout(t); res(false); });
+      });
+      if(migrating !== info || info.cancelled){ try{ peer.destroy(); }catch(e){} return; }
+      if(!ok){
+        try{ peer.destroy(); }catch(e){}
+        lsSet('thpoker-peer-' + info.code, genGuestId(info.code));
+        await delay(2000);
+        continue;
+      }
+    }
+    if(migrating !== info || info.cancelled) return;
+    const conn = peer.connect('thpoker-' + info.code, {reliable:true});
+    let opened = false;
+    await new Promise(res => {
+      const t = setTimeout(res, 6000);
+      conn.on('open', () => { opened = true; clearTimeout(t); res(); });
+      conn.on('error', () => { clearTimeout(t); res(); });
+    });
+    if(migrating !== info || info.cancelled) return;
+    if(opened){
+      net = {mode:'client', peer, conn, code: info.code, seat: undefined, myName: info.myName};
+      try{ conn.send({type:'join', name: info.myName}); }catch(e){}
+      conn.on('data', d => { if(net && net.conn === conn) clientHandleData(d); });
+      conn.on('close', () => clientDisconnected());
+      conn.on('error', () => clientDisconnected());
+      const waitStart = Date.now();
+      while(migrating === info && !info.cancelled && conn.open !== false && Date.now() - waitStart < 8000){
+        await delay(300);
+      }
+      if(migrating !== info || info.cancelled) return;
+      try{ conn.close(); }catch(e){}
+      continue;
+    }
+    try{ conn.close(); }catch(e){}
+    info.tries++;
+    if(info.tries >= 5 && info.mySeat >= 0 && info.snap && info.snap.started && !info.snap.over){
+      info.role = 'takeover';
+      tryTakeover(info, 0);
+      return;
+    }
+    await delay(3000);
+  }
 }
 function currentTurnLeftMs(){
   if(net && net.mode === 'client'){
@@ -1499,7 +1783,7 @@ function snapshotFor(seat){
     started: gameRunning,
     waitingNext: !!nextHandResolver,
     over: overInfo,
-    handNum, dealerIdx, curBlinds, curBet, minRaise, curActor, potCarried,
+    handNum, hostIdx, dealerIdx, curBlinds, curBet, minRaise, curActor, potCarried,
     stage: stageLabel, board: board,
     turnLeft: turnDeadline ? Math.max(0, turnDeadline - Date.now()) : 0,
     utg: utgIdx,
@@ -1508,6 +1792,7 @@ function snapshotFor(seat){
       i: p.i, seated: p.seated, name: p.name, color: p.color, stack: p.stack, bet: p.bet,
       totalBet: p.totalBet, folded: p.folded, allIn: p.allIn, elim: p.elim,
       blind: p.blind, win: !!p.win, revealed: !!p.revealed, remote: !!p.remote,
+      offline: !!p.offline, peerId: p.peerId || '',
       handHidden: !((p.i === seat && p.seated) || p.revealed),
       hand: ((p.i === seat && p.seated) || p.revealed) ? p.hand : []
     })),
@@ -1524,11 +1809,13 @@ function netBroadcast(){
 }
 function applySnapshot(s){
   if(!s || !net || net.mode !== 'client') return;
+  lastSnapshot = s;
   localIdx = (typeof s.yourSeat === 'number' && s.yourSeat >= 0) ? s.yourSeat : -1;
   players = s.players;
   board = s.board || [];
   curBet = s.curBet; minRaise = s.minRaise; curActor = s.curActor;
   dealerIdx = s.dealerIdx; handNum = s.handNum; curBlinds = s.curBlinds;
+  hostIdx = (typeof s.hostIdx === 'number') ? s.hostIdx : 0;
   potCarried = s.potCarried;
   stageLabel = s.stage || '';
   snapshotWaitingNext = !!s.waitingNext;
@@ -1551,7 +1838,8 @@ function showClientWaiting(){
   const rows = players.map((p, i) => {
     if(!p.seated) return '<span><b style="color:#7f909f">空位 ' + i + '</b><span>等待加入</span></span>';
     const you = i === localIdx ? '【你】' : '';
-    return '<span><b style="color:' + p.color + '">' + you + p.name + '</b><span>' + (p.stack > 0 ? '$' + p.stack : '就绪') + '</span></span>';
+    const hostMark = i === hostIdx ? '【房主】' : '';
+    return '<span><b style="color:' + p.color + '">' + you + hostMark + p.name + '</b><span>' + (p.offline ? '离线中' : (p.stack > 0 ? '$' + p.stack : '就绪')) + '</span></span>';
   }).join('');
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>' + (localIdx < 0 ? '已加入（观战）' : '已加入房间 ' + (net && net.code || '')) + '</h2>' +
@@ -1609,6 +1897,9 @@ if(typeof window !== 'undefined'){
   window.__api = {
     hostHandleData, hostDropConn, snapshotFor, applySnapshot, waitRemoteAction,
     canJoin, netBroadcast, initSeats, resetGame, runGame, startSolo, clearSeat,
+    endHand, pickNewHost, transferHostIfNeeded, hostIdx: () => hostIdx,
+    pickHostCandidate, startMigration, takeoverAsHost, reconnectSeat,
+    lastSnap: () => lastSnapshot, migrating: () => migrating, loadGuestId, genGuestId,
     promoteSpectators, seatRemotePlayer, copyText, showToast, refreshHostLobby, render,
     players: () => players, net: () => net,
     setNet(n){ net = n; },
@@ -1620,11 +1911,11 @@ if(typeof window !== 'undefined'){
     clickNext(){ if(nextHandResolver){ const r = nextHandResolver; nextHandResolver = null; r(); } },
     state: () => ({over: overInfo !== null, hands: handNum}),
     dbg: () => ({
-      handNum, curActor, stage: stageLabel, board: board.length, pot: potTotal(),
+      handNum, host: hostIdx, curActor, stage: stageLabel, board: board.length, pot: potTotal(),
       bets: players.map(p => p.bet), acted: players.map(p => p.acted),
       folded: players.map(p => p.folded), stacks: players.map(p => p.stack),
-      seated: players.map(p => p.seated), leaving: players.map(p => p.leaving),
-      curBet, minRaise, humanResolver: !!humanResolver
+      seated: players.map(p => p.seated),
+      curBet, minRaise, humanResolver: !!humanResolver, offline: players.map(p => p.offline)
     })
   };
 }
