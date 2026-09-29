@@ -17,6 +17,10 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 #hud .roomtag{color:#ffd97a;font-weight:700;cursor:pointer;background:rgba(255,213,74,.12);border:1px dashed rgba(255,213,74,.5);border-radius:8px;padding:2px 10px;transition:background .15s}
 #hud .roomtag:hover{background:rgba(255,213,74,.25)}
 #hud .roomtag:active{background:rgba(255,213,74,.35)}
+#hud .leavebtn{background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.12);color:#74838f;border-radius:7px;padding:1px 8px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit;margin-left:8px;flex:none;transition:color .15s,border-color .15s}
+#hud .leavebtn:hover{color:#ff9a76;border-color:rgba(255,154,118,.45)}
+#hud .leavebtn:active{background:rgba(255,154,118,.12)}
+#hud .leavebtn.armed{color:#ff8a8a;border-color:rgba(255,138,138,.55);background:rgba(255,138,138,.08)}
 
 #opps{display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px 2px;justify-content:center;flex:none}
 .opp{position:relative;width:142px;background:rgba(9,13,18,.85);border:1px solid rgba(255,255,255,.12);border-radius:12px;padding:5px 7px;transition:border-color .2s,box-shadow .2s,opacity .2s}
@@ -45,6 +49,16 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 }
 .opp.folded .oh,.opp.folded .otags,.opp.folded .obet,.opp.folded .ocards{opacity:.35;filter:grayscale(1)}
 .opp.win{border-color:#5ce27a;box-shadow:0 0 0 2px rgba(92,226,122,.4),0 0 14px rgba(92,226,122,.45)}
+.opp.allin{border-color:#ff4d4d;animation:allinred 1s infinite}
+@keyframes allinred{
+  0%,100%{box-shadow:0 0 0 2px rgba(255,60,60,.35),0 0 12px rgba(255,40,40,.35)}
+  50%{box-shadow:0 0 0 3px rgba(255,80,80,.9),0 0 26px rgba(255,40,40,.8)}
+}
+#me.allin #me-cards{filter:drop-shadow(0 0 14px rgba(255,50,50,.9))}
+#me.allin .pill{background:linear-gradient(#ff8a8a,#e05252);color:#fff}
+#flash{position:absolute;inset:0;z-index:12;pointer-events:none;opacity:0;background:radial-gradient(ellipse at 50% 50%,transparent 45%,rgba(255,30,30,.55) 100%)}
+#flash.go{animation:allinflash .7s ease-in-out 3}
+@keyframes allinflash{0%,100%{opacity:0}50%{opacity:1}}
 #stage.crowd .opp{width:104px;padding:4px 5px}
 #stage.crowd .opp .avatar{width:20px;height:20px;font-size:10px}
 #stage.crowd .opp .oname{font-size:11px}
@@ -55,37 +69,33 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 #stage.crowd .card.sc{width:24px;height:34px}
 #stage.crowd .card.sc .cb{font-size:14px}
 #stage.crowd .card.sc .ct{font-size:7px}
-#stage.crowd #me{height:114px}
-#stage.crowd .card.hmg{width:62px;height:86px}
-#stage.crowd .card.hmg .cb{font-size:34px}
-#stage.crowd .card.hmg .ct{font-size:12px;top:3px;left:4px}
-#stage.crowd .card.hmg .cc{font-size:11px}
+#stage.crowd #me{height:118px}
+#stage.crowd .card.hmg{width:56px;height:78px}
+#stage.crowd .card.hmg .cb{font-size:28px}
+#stage.crowd .card.hmg .ct{font-size:18px;top:2px;left:3px}
+#stage.crowd .card.sc .ct{font-size:12px;top:1px;left:2px}
+#stage.crowd .card.hmg .cc{font-size:10px}
 
-#center{flex:1 1 122px;min-height:120px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;padding:6px 0 4px}
-#felt-bg{position:absolute;inset:4px 14px;border-radius:26px;background:radial-gradient(130% 100% at 50% 30%,#2c7649 0%,#1c5735 60%,#164427 100%);box-shadow:inset 0 0 40px rgba(0,0,0,.45);z-index:0}
-#center>*{position:relative;z-index:1}
+#center{flex:1 1 130px;min-height:130px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;position:relative;padding:6px 0 4px}
+#felt-bg{position:absolute;inset:4px 14px;border-radius:26px;background:radial-gradient(130% 100% at 50% 30%,#2f7d4f 0%,#1e5c38 55%,#154529 100%);border:4px solid #5b3d21;box-shadow:inset 0 0 40px rgba(0,0,0,.5),inset 0 0 0 3px rgba(212,175,55,.28),0 3px 12px rgba(0,0,0,.5);z-index:0}
+#center>*:not(#felt-bg){position:relative;z-index:1}
 #pot{background:rgba(0,0,0,.4);border:1px solid rgba(255,215,120,.4);color:#ffd97a;font-weight:700;padding:4px 16px;border-radius:14px;font-size:14px}
-#board{display:flex;gap:6px;min-height:78px;align-items:center}
+#board{display:flex;gap:6px;min-height:78px;align-items:center;margin-bottom:6px}
 
 .card{position:relative;background:#f8f7f1;border-radius:6px;box-shadow:0 2px 6px rgba(0,0,0,.4);flex:none}
 .card.red{color:#c22f3b}
 .card.black{color:#252b34}
-.card .ct{position:absolute;top:2px;left:3px;font-style:normal;font-weight:800;font-size:11px;line-height:1;text-align:center}
-.card .ct small{display:block;font-size:9px;margin-top:1px}
-.card .cc{position:absolute;bottom:2px;right:2px;font-style:normal;font-weight:800;font-size:10px;line-height:1;text-align:center;transform:rotate(180deg)}
-.card .cc small{display:block;font-size:8px;margin-top:1px}
+.card .ct{position:absolute;top:3px;left:4px;font-style:normal;font-weight:800;font-size:20px;line-height:1;text-align:center}
+.card .cc{position:absolute;bottom:3px;right:4px;font-style:normal;font-weight:800;font-size:20px;line-height:1;text-align:center;transform:rotate(180deg)}
 .card .cb{position:absolute;left:50%;top:50%;transform:translate(-50%,-48%);font-weight:400;opacity:.9}
 .card.bm{width:56px;height:78px}
 .card.bm .cb{font-size:30px}
-.card.hmg{width:70px;height:98px}
-.card.hmg .ct{font-size:13px;top:3px;left:4px}
-.card.hmg .ct small{font-size:10px}
-.card.hmg .cc{font-size:12px;bottom:2px;right:2px}
-.card.hmg .cc small{font-size:9px}
-.card.hmg .cb{font-size:38px}
+.card.hmg{width:62px;height:88px}
+.card.hmg .ct{font-size:22px;top:3px;left:4px}
+.card.hmg .cc{font-size:22px;bottom:3px;right:4px}
+.card.hmg .cb{font-size:30px}
 .card.sc{width:32px;height:42px}
-.card.sc .ct{font-size:8px;top:1px;left:2px}
-.card.sc .ct small{font-size:7px}
+.card.sc .ct{font-size:14px;top:1px;left:3px}
 .card.sc .cc{display:none}
 .card.sc .cb{font-size:16px}
 .card.cback{background:repeating-linear-gradient(45deg,#3d5c9e 0 5px,#32508c 5px 10px);border:2px solid #e9e7db}
@@ -94,10 +104,10 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .card.pop{animation:pop .3s cubic-bezier(.2,.9,.3,1.3)}
 @keyframes pop{from{transform:translateY(-14px) scale(.6);opacity:0}to{transform:none;opacity:1}}
 
-#me{height:134px;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:none}
+#me{height:132px;display:flex;flex-direction:column;align-items:center;gap:5px;position:relative;flex:none}
 .pill{background:linear-gradient(#ffd97a,#dfa436);color:#3a2604;font-weight:800;font-size:12px;padding:2px 10px;border-radius:10px;border:1px solid #8a6212;box-shadow:0 2px 6px rgba(0,0,0,.4)}
 #me-cards{display:flex;gap:6px}
-#me-info{font-size:12.5px;color:#c7d0da;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center}
+#me-info{font-size:12.5px;color:#c7d0da;display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:center;max-height:36px;overflow:hidden}
 #me-info b{color:#ffd97a}
 #me.turn #me-cards{filter:drop-shadow(0 0 10px rgba(255,213,74,.55))}
 #me.folded #me-cards{opacity:.35;filter:grayscale(1)}
@@ -141,18 +151,21 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 #logdock.collapsed{flex:0 0 38px;min-height:0}
 #logdock-head{display:flex;align-items:center;gap:10px;padding:0 12px;height:38px;flex:none;cursor:pointer;user-select:none}
 #logdock-head:hover{background:rgba(255,255,255,.04)}
-#dock-title{font-size:12px;color:#93a3b3;font-weight:700;flex:none}
-#dock-title.hl{color:#ffd54a}
-#dock-latest{flex:1;min-width:0;font-size:12px;color:#c7d0da;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-#dock-latest.hl{color:#ffe9ad;font-weight:700}
-#btn-dock-toggle{flex:none;background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
-#btn-dock-toggle:active{background:#31404f}
 #logdock-body{flex:1;overflow-y:auto;font-size:12px;line-height:1.7;color:#c7d0da;padding:4px 14px 8px}
 #logdock.collapsed #logdock-body{display:none}
 #logdock-body .sep{color:#7f909f;margin-top:6px}
+#logdock-body .hl{font-size:13.5px;font-weight:700;color:#ffe9ad;margin-top:5px;line-height:1.8}
 
 #overlay{position:absolute;inset:0;z-index:20;background:rgba(4,7,10,.82);display:flex;align-items:center;justify-content:center}
 #overlay.hide{display:none}
+#overlay.bottom{align-items:flex-end;background:transparent;pointer-events:none}
+#overlay.bottom .ovcard{pointer-events:auto;width:92%;max-width:350px;max-height:380px;margin-bottom:6px;padding:13px 14px 11px}
+#overlay.bottom .ovcard h2{font-size:17px;margin-bottom:6px}
+#overlay.bottom .ovcard h2 + .winline{margin-top:4px}
+#overlay.bottom .ovcard .winline{margin:6px 0 2px;font-size:13.5px}
+#overlay.bottom .ovcard .seatlist{max-height:170px;overflow-y:auto}
+#overlay.bottom .ovcard .bigbtn{margin-top:8px;padding:10px 0;font-size:14.5px}
+#overlay.bottom .ovcard .dim{font-size:11px}
 .ovcard{width:90%;max-width:420px;background:linear-gradient(165deg,#1c2733,#111922);border:1px solid rgba(255,255,255,.13);border-radius:16px;padding:24px 22px;text-align:center;box-shadow:0 20px 50px rgba(0,0,0,.5);max-height:94%;overflow-y:auto}
 .ovcard h1{font-size:30px;color:#ffd97a;letter-spacing:6px;margin-bottom:10px}
 .ovcard h2{font-size:20px;margin-bottom:8px}
@@ -169,6 +182,28 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 .seatlist{display:grid;gap:4px;font-size:12.5px;color:#c7d0da;margin:8px 0}
 .seatlist span{display:flex;justify-content:space-between;background:rgba(255,255,255,.04);border-radius:8px;padding:6px 10px}
 .copyhint{font-size:12px;color:#ffd97a;margin-top:4px}
+.winline{font-size:15px;color:#e8ecf1;line-height:1.8;margin:10px 0 4px;background:rgba(92,226,122,.08);border:1px solid rgba(92,226,122,.35);border-radius:10px;padding:8px 12px}
+.winline b{color:#5ce27a}
+.dlt{font-weight:800;flex:none}
+.dlt.pos{color:#5ce27a}
+.dlt.neg{color:#ff8a8a}
+.dlt.zero{color:#93a3b3}
+.rdy{font-size:11px;font-weight:700;padding:1px 8px;border-radius:6px;flex:none;line-height:15px}
+.rdy.ok{background:rgba(92,226,122,.14);color:#5ce27a;border:1px solid rgba(92,226,122,.4)}
+.rdy.wait{background:rgba(255,255,255,.06);color:#93a3b3;border:1px solid rgba(255,255,255,.16)}
+.rdy.off{background:#4a4055;color:#d9ccf5;border:1px solid #4a4055}
+.rdy.elim{background:#4a3232;color:#d9b0b0;border:1px solid #4a3232}
+.cfgrow{display:flex;gap:8px;margin-top:10px}
+.cfgrow label{flex:1;font-size:11px;color:#93a3b3;display:flex;flex-direction:column;gap:4px}
+.cfgrow input{background:#0d141b;border:1px solid rgba(255,255,255,.22);color:#e8ecf1;border-radius:10px;padding:8px 4px;font-size:14px;font-family:inherit;outline:none;text-align:center;min-width:0}
+.cfgrow input:focus{border-color:#ffd97a}
+.histlist{display:grid;gap:4px;font-size:12px;color:#c7d0da;margin:8px 0;text-align:left;max-height:46vh;overflow-y:auto}
+.histlist span{display:flex;justify-content:space-between;gap:8px;background:rgba(255,255,255,.04);border-radius:8px;padding:6px 10px}
+.histlist b{color:#ffd97a;flex:none}
+.sesshead{font-size:12px;color:#93a3b3;font-weight:700;text-align:left;margin:12px 0 4px;border-left:3px solid #c8952c;padding-left:8px}
+.btn-danger{background:#7e2a33;color:#ffd9dd}
+.dockbtn{flex:none;background:#26313d;color:#c7d0da;border:1px solid rgba(255,255,255,.14);border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;font-family:inherit}
+.dockbtn:active{background:#31404f}
 </style>
 </head>
 <body>
@@ -176,7 +211,7 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
 <div id="stage">
   <div id="hud">
     <div class="hleft"><span id="hud-hand">德州扑克</span><span id="hud-stage" class="hstage"></span><span id="hud-blind"></span></div>
-    <div class="hleft"><span id="hud-room" class="roomtag" style="display:none"></span></div>
+    <div class="hleft"><span id="hud-room" class="roomtag" style="display:none"></span><button id="btn-leave" class="leavebtn">离开</button></div>
   </div>
   <div id="opps"></div>
   <div id="center">
@@ -206,11 +241,13 @@ body{background:radial-gradient(620px 420px at 50% 10%,#1d2a38 0%,#0c1016 70%);f
     </div>
   </div>
   <div id="toast"></div>
+  <div id="flash"></div>
   <div id="logdock">
     <div id="logdock-head">
       <span id="dock-title">操作记录</span>
       <span id="dock-latest"></span>
-      <button id="btn-dock-toggle">收起</button>
+      <button id="btn-hist" class="dockbtn">战绩</button>
+      <button id="btn-dock-toggle" class="dockbtn">收起</button>
     </div>
     <div id="logdock-body"></div>
   </div>
@@ -245,6 +282,14 @@ let bannerTimer = null;
 let net = null;
 let localIdx = 0;
 let hostIdx = 0;
+let cfg = {stack: 2500, sb: 25, bb: 50};
+let handHistory = [];
+let handResult = null;
+let histSession = Date.now();
+const HIST_KEY = 'thpoker-hist';
+const HIST_MAX = 400;
+let allInSeen = {};
+const ROOM_TTL = 120 * 60 * 1000;
 let lastSnapshot = null;
 let migrating = null;
 let pendingRemote = {};
@@ -257,6 +302,9 @@ let snapshotWaitingNext = false;
 let turnDeadline = 0;
 let utgIdx = -1;
 let clientTurnLeft = null;
+let clientReadySent = false;
+let readyNext = {};
+let nextOnStart = null;
 const TURN_MS = 30000;
 const OFFLINE_MS = 4000;
 const delay = ms => new Promise(r => setTimeout(r, ms * ((typeof window !== 'undefined' && window.__speed) || 1)));
@@ -321,7 +369,8 @@ function bestHand(cards){
   return best;
 }
 function cmpScores(a, b){
-  for(let i = 0; i < 5; i++){
+  const n = Math.max(a.length, b.length);
+  for(let i = 0; i < n; i++){
     const x = a[i] || 0, y = b[i] || 0;
     if(x !== y) return x > y ? 1 : -1;
   }
@@ -349,7 +398,7 @@ function straightHigh(uniqDesc){
   return 0;
 }
 function potTotal(){ return potCarried + players.reduce((a,p) => a + (p.seated ? p.bet : 0), 0); }
-function inHandCount(){ return players.filter(p => p.seated && !p.folded).length; }
+function inHandCount(){ return players.filter(p => p.seated && !p.folded && !p.elim).length; }
 function canActCount(){ return players.filter(p => p.seated && !p.folded && p.stack > 0 && !p.elim).length; }
 function nextActiveFrom(i){
   const len = players.length;
@@ -369,14 +418,14 @@ function nextActorAfter(i){
   return i;
 }
 function blindSize(){
-  const lvl = Math.min(4, Math.floor((handNum - 1) / 8));
-  const sb = 25 * (2 ** lvl);
+  const lvl = Math.min(4, Math.floor(Math.max(0, handNum - 1) / 8));
+  const sb = cfg.sb * (1.5 ** lvl);
   return {sb, bb: sb * 2};
 }
 function blankSeat(i){
   return {
     i, seated:false, remote:false, isAI:false, offline:false, peerId:'',
-    name:'', color:'#7f909f', stack:0, hand:[], bet:0, totalBet:0,
+    name:'', color:'#7f909f', stack:0, stackAtStart:0, handDelta:0, hand:[], bet:0, totalBet:0,
     folded:true, allIn:false, acted:false, elim:true, blind:'', win:false,
     revealed:false, handHidden:false, aggr:0, tight:0
   };
@@ -510,24 +559,78 @@ function buildPots(){
 // 纯逻辑区结束
 const $ = s => document.querySelector(s);
 function N(p){ return '<b style="color:' + p.color + '">' + p.name + '</b>'; }
-function log(msg){
-  logLines.push(msg);
-  if(logLines.length > 120) logLines.shift();
+let _histCtr = 0;
+	function newHistSession(){
+		_histCtr++;
+		histSession = Date.now() + _histCtr;
+	}
+function recordHand(rec){
+  rec.session = histSession;
+  rec.when = Date.now();
+  handHistory.push(rec);
+  saveHist();
+}
+function loadHist(){
+  try{
+    if(typeof localStorage !== 'undefined'){
+      const raw = localStorage.getItem(HIST_KEY);
+      if(raw){
+        let a;
+        try{ a = JSON.parse(raw); }catch(e){
+          a = [];
+          try{
+            const items = raw.replace(/^\[|\]$/g, '').split('},{');
+            for(let i = 0; i < items.length; i++){
+              let item = items[i];
+              if(i > 0) item = '{' + item;
+              if(i < items.length - 1) item = item + '}';
+              try{ const h = JSON.parse(item); if(h && typeof h.no === 'number') a.push(h); }catch(e2){}
+            }
+          }catch(e2){}
+        }
+        if(Array.isArray(a)) return a.filter(h => h && typeof h.no === 'number');
+      }
+    }
+  }catch(e){}
+  return [];
+}
+function saveHist(){
+  try{
+    if(typeof localStorage === 'undefined') return;
+    const past = loadHist().filter(h => h.session !== histSession);
+    localStorage.setItem(HIST_KEY, JSON.stringify(past.concat(handHistory).slice(-HIST_MAX)));
+  }catch(e){}
+}
+function clearHist(){
+  try{ if(typeof localStorage !== 'undefined') localStorage.removeItem(HIST_KEY); }catch(e){}
+}
+function fmtWhen(ts){
+  const d = new Date(ts);
+  const pad = n => (n < 10 ? '0' : '') + n;
+  return (d.getMonth() + 1) + '月' + d.getDate() + '日 ' + pad(d.getHours()) + ':' + pad(d.getMinutes());
+}
+function log(msg, cls){
+  logLines.push({m: msg, c: cls || ''});
+  if(logLines.length > 160) logLines.shift();
   const box = $('#logdock-body');
   const d = document.createElement('div');
+  if(cls) d.className = cls;
   d.innerHTML = msg;
   box.appendChild(d);
-  while(box.children.length > 100) box.removeChild(box.firstChild);
-  box.scrollTop = box.scrollHeight;
-  $('#dock-latest').innerHTML = msg;
-}
-function rebuildLog(lines){
-  logLines = lines.slice();
-  const box = $('#logdock-body');
-  box.innerHTML = logLines.map(m => '<div>' + m + '</div>').join('');
+  while(box.children.length > 130) box.removeChild(box.firstChild);
   box.scrollTop = box.scrollHeight;
   const latest = $('#dock-latest');
-  latest.innerHTML = logLines.length ? logLines[logLines.length - 1] : '';
+  latest.innerHTML = msg;
+  latest.classList.toggle('hl', cls === 'hl');
+}
+function escHtml(s){ return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function rebuildLog(lines){
+  logLines = (lines || []).map(x => (typeof x === 'string') ? {m: x, c: ''} : x).slice();
+  const box = $('#logdock-body');
+  box.innerHTML = logLines.map(o => '<div' + (o.c ? ' class="' + escHtml(o.c) + '"' : '') + '>' + o.m + '</div>').join('');
+  box.scrollTop = box.scrollHeight;
+  const latest = $('#dock-latest');
+  latest.innerHTML = logLines.length ? logLines[logLines.length - 1].m : '';
   latest.classList.remove('hl');
 }
 function setFace(el, c){
@@ -535,28 +638,30 @@ function setFace(el, c){
   el.classList.toggle('red', red);
   el.classList.toggle('black', !red);
   el.innerHTML =
-    '<i class="ct">' + RNM[c.r] + '<small>' + SU[c.s] + '</small></i>' +
+    '<i class="ct">' + RNM[c.r] + '</i>' +
     '<b class="cb">' + SU[c.s] + '</b>' +
-    '<i class="cc">' + RNM[c.r] + '<small>' + SU[c.s] + '</small></i>';
+    '<i class="cc">' + RNM[c.r] + '</i>';
 }
 function syncBoard(){
   const el = $('#board');
-  while(el.children.length > board.length) el.removeChild(el.lastChild);
-  for(let k = 0; k < board.length; k++){
+  while(el.children.length > 5) el.removeChild(el.lastChild);
+  for(let k = 0; k < 5; k++){
     const c = board[k];
-    if(k < el.children.length){
-      const child = el.children[k];
-      if(child.__key !== c.r + '-' + c.s){
-        child.__key = c.r + '-' + c.s;
-        child.className = 'card bm';
-        setFace(child, c);
-      }
-    }else{
-      const child = document.createElement('div');
-      child.className = 'card bm pop';
-      child.__key = c.r + '-' + c.s;
-      setFace(child, c);
+    let child = el.children[k];
+    if(!child){
+      child = document.createElement('div');
+      child.__key = '';
       el.appendChild(child);
+    }
+    const key = c ? ('f' + c.r + '-' + c.s) : 'back';
+    if(child.__key === key) continue;
+    child.__key = key;
+    if(c){
+      child.className = 'card bm pop';
+      setFace(child, c);
+    }else{
+      child.className = 'card bm cback';
+      child.innerHTML = '';
     }
   }
 }
@@ -582,7 +687,7 @@ function setStage(t){
   $('#hud-stage').textContent = t;
 }
 function overlayVisible(){ return !$('#overlay').classList.contains('hide'); }
-function hideOverlay(){ $('#overlay').classList.add('hide'); }
+function hideOverlay(){ const ov = $('#overlay'); ov.classList.add('hide'); ov.classList.remove('bottom'); }
 function seatedOpponents(){
   const out = [];
   const len = players.length;
@@ -617,13 +722,14 @@ function buildOppSlots(){
 }
 function posTags(p){
   const tags = [];
+  const actives = players.filter(x => x.seated && !x.elim).length;
   if(hostIdx === p.i && p.seated && !p.elim) tags.push('<span class="otag host">房主</span>');
   if(dealerIdx === p.i) tags.push('<span class="otag dealer">庄</span>');
   if(p.blind === '小盲') tags.push('<span class="otag blind">小盲</span>');
-  if(p.blind === '大盲') tags.push('<span class="otag blind">大盲</span>');
-  if(stageLabel === '翻牌前' && utgIdx === p.i && players.filter(x => x.seated && !x.elim).length >= 3)
+  if(p.blind === '大盲' && actives >= 4) tags.push('<span class="otag blind">大盲</span>');
+  if(stageLabel === '翻牌前' && utgIdx === p.i && actives >= 4)
     tags.push('<span class="otag utg">枪口</span>');
-  if(p.allIn && !p.folded) tags.push('<span class="otag allin">全下</span>');
+  if(p.allIn && !p.folded && !p.elim) tags.push('<span class="otag allin">全下</span>');
   if(p.folded && p.seated && !p.elim && p.i !== localIdx) tags.push('<span class="otag fold">弃</span>');
   if(p.offline && p.seated && !p.elim) tags.push('<span class="otag off">离线</span>');
   return tags.join('');
@@ -660,6 +766,23 @@ function myHandName(){
   const hi = Math.max(a.r, b.r), lo = Math.min(a.r, b.r);
   return RN(hi) + ' ' + RN(lo) + (a.s === b.s ? '（同花）' : '');
 }
+function triggerAllinFx(){
+  const f = $('#flash');
+  if(!f) return;
+  f.classList.remove('go');
+  void f.offsetWidth;
+  f.classList.add('go');
+  beep(240, .12, .08);
+  setTimeout(() => beep(320, .12, .08), 170);
+}
+function checkAllinFx(){
+  const cur = {};
+  players.forEach(p => { if(p.seated && p.allIn && !p.folded && !p.elim) cur[p.i] = 1; });
+  let fresh = false;
+  Object.keys(cur).forEach(k => { if(!allInSeen[k]) fresh = true; });
+  allInSeen = cur;
+  if(fresh) triggerAllinFx();
+}
 function render(){
   if(!players.length){ renderActionBar(); return; }
   const so = seatedOpponents();
@@ -671,6 +794,7 @@ function render(){
     box.className = 'opp' +
       (curActor === p.i && !p.folded && p.stack > 0 && !overlayVisible() && inHandCount() >= 2 ? ' turn' : '') +
       (p.folded ? ' folded' : '') +
+      (p.allIn && !p.folded && !p.elim ? ' allin' : '') +
       (p.win && !p.folded ? ' win' : '');
     box.querySelector('.oname').textContent = p.name;
     const av = box.querySelector('.avatar');
@@ -695,6 +819,7 @@ function render(){
     const myTurn = curActor === localIdx && !p.folded && p.stack > 0 && !overlayVisible() && inHandCount() >= 2;
     me.classList.toggle('turn', myTurn);
     me.classList.toggle('folded', p.folded && !p.elim);
+    me.classList.toggle('allin', p.allIn && !p.folded && !p.elim);
     me.querySelector('#me-info').innerHTML =
       (p.bet > 0 ? '<span class="pill">下注 $' + p.bet + '</span>' : '') +
       '<b>' + p.name + '</b><span>筹码 $' + p.stack + '</span>' +
@@ -720,6 +845,7 @@ function render(){
   }
   syncBoard();
   renderActionBar();
+  checkAllinFx();
   netBroadcast();
 }
 function renderActionBar(){
@@ -777,12 +903,21 @@ function resolveHuman(a){
   renderActionBar();
   r(a);
 }
+let _pendingActionTimer = null;
 function submitAction(a){
   if(net && net.mode === 'client'){
-    if(!net.conn || net.conn.open === false) return;
+    if(!net.conn || net.conn.open === false){ showToast('连接已断开，无法发送操作'); return; }
     pendingAction = true;
-    try{ net.conn.send({type:'action', a}); }catch(e){}
+    try{ net.conn.send({type:'action', a}); }catch(e){ pendingAction = false; showToast('发送失败，请重试'); return; }
     renderActionBar();
+    clearTimeout(_pendingActionTimer);
+    _pendingActionTimer = setTimeout(() => {
+      if(pendingAction){
+        pendingAction = false;
+        showToast('房主无响应，请重新操作');
+        renderActionBar();
+      }
+    }, 8000);
   }else{
     resolveHuman(a);
   }
@@ -803,8 +938,10 @@ function newHand(){
   dealerIdx = nextActiveFrom(dealerIdx);
   players.forEach(p => {
     if(p.seated){
-      p.hand = []; p.bet = 0; p.totalBet = 0; p.folded = false; p.allIn = false;
+      p.stackAtStart = p.stack;
+      p.hand = []; p.bet = 0; p.totalBet = 0; p.allIn = false;
       p.acted = false; p.blind = ''; p.win = false; p.revealed = false;
+      p.folded = !!p.elim;
     }
   });
   curBlinds = blindSize();
@@ -955,7 +1092,7 @@ function closeRoad(){
   players.forEach(p => { p.acted = false; });
 }
 function awardFoldWin(){
-  const w = players.find(p => p.seated && !p.folded);
+  const w = players.find(p => p.seated && !p.folded && !p.elim);
   const amt = potTotal();
   w.stack += amt;
   w.win = true;
@@ -963,14 +1100,16 @@ function awardFoldWin(){
   potCarried = 0;
   curBet = 0;
   setStage('摊牌');
-  log(N(w) + ' 收下底池 $' + amt + '（其余玩家弃牌）');
+  handResult = {names: w.name, hand: '', reason: '其余玩家弃牌', amt};
+  recordHand({no: handNum, names: handResult.names, hand: '', reason: handResult.reason, amt: handResult.amt});
+  log(N(w) + ' 收下底池 $' + amt + '（其余玩家弃牌）', 'hl');
   banner(w.name + ' 赢得 $' + amt + '（其他人弃牌）', 3200);
   render();
   beep(1040, .1);
 }
 function showdown(){
   setStage('摊牌');
-  const contenders = players.filter(p => p.seated && !p.folded);
+  const contenders = players.filter(p => p.seated && !p.folded && !p.elim);
   contenders.forEach(p => { p.revealed = true; });
   render();
   const pots = buildPots();
@@ -1001,10 +1140,12 @@ function showdown(){
   potCarried = 0;
   curBet = 0;
   contenders.forEach(p => {
-    if(winners.has(p.i)) log(N(p) + ' 赢得 $' + winners.get(p.i).amt + '（' + handName(scores[p.i]) + '）');
+    if(winners.has(p.i)) log(N(p) + ' 赢得 $' + winners.get(p.i).amt + '（' + handName(scores[p.i]) + '）', 'hl');
     else log(N(p) + ' ' + handName(scores[p.i]) + '，落败');
   });
   const names = [...winners.keys()].map(i => players[i].name).join('、');
+  handResult = {names, hand: main.hand, reason: (winners.size > 1 ? '牌型完全相同，平分底池' : '最佳牌型获胜'), amt: main.amt};
+  recordHand({no: handNum, names, hand: main.hand, reason: handResult.reason, amt: main.amt});
   banner(names + ' 赢得 $' + main.amt + ' · ' + main.hand, 3600);
   beep(1040, .1);
   setTimeout(() => beep(1560, .18), 130);
@@ -1046,7 +1187,7 @@ async function playHand(){
 }
 function clearSeat(p){
   p.seated = false; p.remote = false;
-  p.elim = true; p.stack = 0; p.hand = []; p.bet = 0; p.totalBet = 0;
+  p.elim = true; p.stack = 0; p.hand = []; p.bet = 0; p.totalBet = 0; p.handDelta = 0;
   p.folded = true; p.allIn = false; p.win = false; p.revealed = false;
   p.name = ''; p.blind = ''; p.offline = false; p.peerId = '';
 }
@@ -1073,8 +1214,15 @@ function transferHostIfNeeded(){
 }
 async function endHand(){
   curActor = -1;
+  players.forEach(p => { if(p.seated) p.handDelta = (p.stackAtStart != null) ? (p.stack - p.stackAtStart) : 0; });
   players.forEach(p => {
-    if(p.stack <= 0 && p.seated && !p.elim){ p.elim = true; log(N(p) + ' 出局'); }
+    if(p.stack <= 0 && p.seated && !p.elim){
+      p.elim = true;
+      p.folded = true;
+      p.revealed = false;
+      p.hand = [];
+      log(N(p) + ' 出局');
+    }
   });
   players.forEach(p => { if(p.seated && p.elim && p.offline){ log(N(p) + ' 已出局离场，座位空出'); clearSeat(p); } });
   transferHostIfNeeded();
@@ -1093,8 +1241,10 @@ async function endHand(){
     if(!players[0].seated || players[0].elim){ gameOverScreen(false); return 'over'; }
     if(alive.length === 1){ gameOverScreen(true); return 'over'; }
   }
+  const nextP = waitForNextHand();
+  beginNextPhase();
   showNextHandOverlay();
-  await waitForNextHand();
+  await nextP;
   hideOverlay();
   return 'next';
 }
@@ -1108,22 +1258,128 @@ async function runGame(){
 }
 function showNextHandOverlay(onStart){
   if(net && net.mode === 'client') return;
+  if(onStart) nextOnStart = onStart;
+  renderNextOverlay();
+}
+function beginNextPhase(){
+  readyNext = {};
+  players.forEach(p => {
+    if(p.seated && !p.elim && !p.remote && p.isAI) readyNext[p.i] = true;
+  });
+  render();
+}
+function allReadyNext(){
+  const need = players.filter(p => p.seated && !p.elim && !p.offline);
+  return need.length > 0 && need.every(p => readyNext[p.i]);
+}
+function markReady(i){
+  if(!nextHandResolver || i == null || i < 0) return;
+  readyNext[i] = true;
+  render();
+  if(allReadyNext()){ resolveNext(); return; }
+  renderNextOverlay();
+}
+function resolveNext(){
+  readyNext = {};
+  const r = nextHandResolver;
+  nextHandResolver = null;
+  hideOverlay();
+  if(r) r();
+  if(nextOnStart){
+    const f = nextOnStart;
+    nextOnStart = null;
+    f();
+  }
+}
+function nextRowHtml(p){
+  const delta = p.handDelta || 0;
+  const cls = delta > 0 ? 'pos' : (delta < 0 ? 'neg' : 'zero');
+  const dstr = delta > 0 ? '+$' + delta : (delta < 0 ? '-$' + (-delta) : '±$0');
+  let badge;
+  if(p.elim) badge = '<span class="rdy elim">出局</span>';
+  else if(p.offline) badge = '<span class="rdy off">离线</span>';
+  else if(readyNext[p.i] || (net && net.mode === 'client' && p.i === localIdx && clientReadySent)) badge = '<span class="rdy ok">已准备</span>';
+  else badge = '<span class="rdy wait">待准备</span>';
+  const you = (p.i === localIdx) ? '【你】' : '';
+  const hostMark = (p.i === hostIdx) ? '【房主】' : '';
+  return '<span><b style="color:' + p.color + '">' + you + hostMark + p.name + '</b><span class="dlt ' + cls + '">' + dstr + '</span>' + badge + '</span>';
+}
+function renderNextOverlay(){
+  if(net && net.mode === 'client') return;
+  if(!nextHandResolver) return;
   const ov = $('#overlay');
   ov.classList.remove('hide');
-  const rows = players.filter(p => p.seated).map(p =>
-    '<span><b style="color:' + p.color + '">' + p.name + '</b>　$' + p.stack + (p.elim ? '（出局）' : '') + (p.offline ? '（离线）' : '') + '</span>'
-  ).join('');
+  ov.classList.add('bottom');
+  const rows = players.filter(p => p.seated).map(p => nextRowHtml(p)).join('');
+  const res = handResult
+    ? '<p class="winline">胜者：<b>' + handResult.names + '</b>' + (handResult.hand ? ' · ' + handResult.hand : '') + '<br>赢得 $' + handResult.amt + '（' + handResult.reason + '）</p>'
+    : '';
+  const meReady = localIdx >= 0 && readyNext[localIdx];
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>第 ' + handNum + ' 局结束</h2>' +
+    '<button class="btn bigbtn" id="btn-next"' + (meReady ? ' disabled' : '') + '>' + (meReady ? '已准备 · 等待其他玩家' : '准备下一局') + '</button>' +
+    res +
     '<div class="seatlist">' + rows + '</div>' +
-    '<button class="btn bigbtn" id="btn-next">开始第 ' + (handNum + 1) + ' 局</button>' +
+    '<p class="dim">所有人准备后开始下一局 · 已离开或离线的玩家不再等待</p>' +
+    '<button class="btn bigbtn" id="btn-history">查看历史战绩</button>' +
     '</div>';
-  $('#btn-next').onclick = () => {
-    const r = nextHandResolver;
-    nextHandResolver = null;
+  $('#btn-history').onclick = () => showHistoryOverlay();
+  $('#btn-next').onclick = () => { if(nextHandResolver) markReady(localIdx); };
+}
+function histRow(h){
+  return '<span><b>第 ' + h.no + ' 局</b><span>' + h.names + (h.hand ? ' · ' + h.hand : '') + ' +$' + h.amt + '<br>原因：' + h.reason + '</span></span>';
+}
+function showHistoryOverlay(){
+  const ov = $('#overlay');
+  ov.classList.remove('hide');
+  ov.classList.remove('bottom');
+  let html = '';
+  if(handHistory.length){
+    html += '<p class="dim">当前场次 · 共 ' + handHistory.length + ' 局</p>' +
+      '<div class="histlist">' + handHistory.slice().reverse().map(histRow).join('') + '</div>';
+  }
+  const past = loadHist().filter(h => h.session !== histSession);
+  if(past.length){
+    const groups = {};
+    past.forEach(h => { (groups[h.session] = groups[h.session] || []).push(h); });
+    const keys = Object.keys(groups).map(Number).sort((a, b) => b - a);
+    keys.forEach(k => {
+      const g = groups[k].slice().sort((a, b) => a.no - b.no);
+      html += '<p class="sesshead">' + (g[0].when ? fmtWhen(g[0].when) : '更早场次') + ' · 共 ' + g.length + ' 局</p>' +
+        '<div class="histlist">' + g.slice().reverse().map(histRow).join('') + '</div>';
+    });
+  }
+  if(!html) html = '<p class="dim">暂无对局记录</p>';
+  const total = handHistory.length + past.length;
+  ov.innerHTML = '<div class="ovcard">' +
+    '<h2>历史战绩</h2>' +
+    (total ? '<p class="dim">全部场次共 ' + total + ' 局（含当前场次 ' + handHistory.length + ' 局，保存在本机，刷新后仍在）</p>' : '') +
+    html +
+    (total ? '<button class="btn bigbtn btn-danger" id="btn-hist-clear">清空历史战绩</button>' : '') +
+    '<button class="btn bigbtn" id="btn-hist-back">返回</button>' +
+    '</div>';
+  const bc = $('#btn-hist-clear');
+  if(bc){
+    let armed = false;
+    bc.onclick = () => {
+      if(!armed){ armed = true; bc.textContent = '再点一次确认清空（不可恢复）'; return; }
+      clearHist();
+      handHistory = [];
+      showHistoryOverlay();
+    };
+  }
+  $('#btn-hist-back').onclick = () => {
+    if(net && net.mode === 'client'){
+      if(lastSnapshot && lastSnapshot.over) showClientOver(lastSnapshot.over);
+      else if(snapshotWaitingNext) showClientWaiting();
+      else hideOverlay();
+      return;
+    }
+    if(nextHandResolver){ showNextHandOverlay(); return; }
+    if(net && net.mode === 'host' && !gameRunning){ refreshHostLobby(); return; }
+    if(overInfo){ gameOverScreen(overInfo.win); return; }
+    if(!gameRunning){ showStartOverlay(); return; }
     hideOverlay();
-    if(r) r();
-    if(onStart) onStart();
   };
 }
 function waitForNextHand(){
@@ -1135,14 +1391,17 @@ function gameOverScreen(win){
   overInfo = {win, hands: handNum, winner: aliveP.map(p => p.name).join('、')};
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   const winnerLine = (!win && aliveP.length === 1) ? '<p><b style="color:#ffd97a">' + aliveP[0].name + '</b> 赢下了整场对局</p>' : '';
   ov.innerHTML = '<div class="ovcard">' +
     '<h1>' + (win ? '你赢了！' : '游戏结束') + '</h1>' +
     winnerLine +
     '<p>' + (win ? '其他牌手全部出局，这场对局由你拿下。' : '你的筹码用完了，再接再厉！') + '</p>' +
     '<p class="dim">共进行 ' + handNum + ' 局 · 你的剩余筹码 $' + (players[localIdx] && players[localIdx].seated ? players[localIdx].stack : 0) + '</p>' +
+    '<button class="btn bigbtn" id="btn-over-hist">查看历史战绩</button>' +
     '<button class="btn bigbtn" id="btn-again">重新开始</button>' +
     '</div>';
+  $('#btn-over-hist').onclick = () => showHistoryOverlay();
   $('#btn-again').onclick = () => {
     hideOverlay();
     if(net && net.mode === 'host'){ resetGame(); runGame(); }
@@ -1208,10 +1467,7 @@ function loadPeerJS(){
   });
 }
 function genCode(){
-  const chars = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
-  let c = '';
-  for(let i = 0; i < 5; i++) c += chars[Math.floor(Math.random() * chars.length)];
-  return c;
+  return String(Math.floor(1000 + Math.random() * 9000));
 }
 function lsGet(k){
   try{ if(typeof localStorage !== 'undefined') return localStorage.getItem(k); }catch(e){}
@@ -1244,6 +1500,7 @@ function peerErrText(err){
 function showNetPanel(msg, withBack){
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>联机</h2>' +
     '<p>' + msg + '</p>' +
@@ -1263,7 +1520,7 @@ function initSeats(mode, myName){
       s.name = i === 0 ? (myName || '你') : d.name;
       s.color = d.color; s.aggr = d.aggr || 0; s.tight = d.tight || 0;
       s.isAI = i !== 0;
-      s.stack = 2500;
+      s.stack = cfg.stack;
       return s;
     });
   }else{
@@ -1274,7 +1531,7 @@ function initSeats(mode, myName){
         s.seated = true; s.elim = false; s.folded = false;
         s.name = myName || '房主';
         s.color = SEAT_COLORS[0];
-        s.stack = 2500;
+        s.stack = cfg.stack;
       }
       players.push(s);
     }
@@ -1292,6 +1549,14 @@ function initSeats(mode, myName){
   pendingAction = false;
   board = [];
   logLines = [];
+  handHistory = [];
+  handResult = null;
+  allInSeen = {};
+  readyNext = {};
+  nextOnStart = null;
+  clientReadySent = false;
+  newHistSession();
+  curBlinds = {sb: cfg.sb, bb: cfg.bb};
   $('#logdock-body').innerHTML = '';
   $('#dock-latest').innerHTML = '';
   $('#dock-latest').classList.remove('hl');
@@ -1305,7 +1570,7 @@ function initSeats(mode, myName){
 function resetGame(){
   players.forEach(p => {
     if(p.seated){
-      p.stack = 2500; p.elim = false; p.hand = []; p.bet = 0; p.totalBet = 0;
+      p.stack = cfg.stack; p.elim = false; p.hand = []; p.bet = 0; p.totalBet = 0;
       p.folded = false; p.allIn = false; p.acted = false; p.blind = '';
       p.win = false; p.revealed = false;
     }
@@ -1319,18 +1584,25 @@ function resetGame(){
   overInfo = null;
   board = [];
   logLines = [];
-  $('#logdock-body').innerHTML = '';
-  $('#dock-latest').innerHTML = '';
+  handHistory = [];
+  handResult = null;
+  allInSeen = {};
+  readyNext = {};
+  nextOnStart = null;
+  newHistSession();
+  curBlinds = {sb: cfg.sb, bb: cfg.bb};
   syncBoard();
   render();
 }
-function startSolo(name){
+function startSolo(name, c){
   net = null;
+  if(c) cfg = Object.assign({}, c);
   hideOverlay();
   initSeats('solo', name || getName('你'));
   runGame();
 }
-async function createRoom(name){
+async function createRoom(name, c){
+  if(c) cfg = Object.assign({}, c);
   showNetPanel('正在创建房间…');
   let Peer;
   try{ Peer = await loadPeerJS(); }
@@ -1340,7 +1612,7 @@ async function createRoom(name){
   let opened = false;
   peer.on('open', () => {
     opened = true;
-    net = {mode:'host', peer, code, conns:[], spectators:[], hostName:name};
+    net = {mode:'host', peer, code, conns:[], spectators:[], hostName:name, createdAt: Date.now()};
     initSeats('host', name);
     players[0].peerId = loadGuestId(code);
     refreshHostLobby();
@@ -1349,6 +1621,13 @@ async function createRoom(name){
     if(!opened) showNetPanel('房间创建失败：' + peerErrText(err), true);
   });
   peer.on('connection', conn => {
+    if(net && Date.now() - net.createdAt > ROOM_TTL){
+      conn.on('open', () => {
+        try{ conn.send({type:'expired'}); }catch(e){}
+        setTimeout(() => { try{ conn.close(); }catch(e){} }, 600);
+      });
+      return;
+    }
     conn.on('data', d => hostHandleData(conn, d));
     conn.on('close', () => hostDropConn(conn));
     conn.on('error', () => hostDropConn(conn));
@@ -1368,7 +1647,7 @@ function seatRemotePlayer(conn, seatIdx){
   p.offline = false;
   p.name = conn.name;
   p.color = SEAT_COLORS[seatIdx % SEAT_COLORS.length];
-  p.stack = 2500;
+  p.stack = cfg.stack;
   p.peerId = conn.peer || '';
   try{ conn.send({type:'welcome', seat:seatIdx}); }catch(e){}
   net.conns.push(conn);
@@ -1411,18 +1690,35 @@ function hostHandleData(conn, d){
     if(curActor === conn.seat && pendingRemote[conn.seat]){
       pendingRemote[conn.seat](d.a);
     }
+  }else if(d.type === 'ready' && conn.seat !== undefined && conn.seat >= 0){
+    if(nextHandResolver) markReady(conn.seat);
+  }else if(d.type === 'leave' && conn.seat !== undefined && conn.seat >= 0){
+    const p = players[conn.seat];
+    if(p && p.seated && nextHandResolver){
+      clearSeat(p);
+      delete readyNext[conn.seat];
+      log('<b style="color:' + p.color + '">' + p.name + '</b> 离开了房间，座位空出');
+      if(allReadyNext()) resolveNext();
+    }
+    hostDropConn(conn);
   }
 }
 function promoteSpectators(){
   if(!net || net.mode !== 'host' || !net.spectators || !net.spectators.length) return;
-  const before = net.spectators.length;
-  net.spectators = net.spectators.filter(conn => {
+  const remaining = [];
+  let changed = false;
+  for(let k = net.spectators.length - 1; k >= 0; k--){
+    const conn = net.spectators[k];
     const seatIdx = players.findIndex((p, i) => i !== localIdx && !p.seated);
-    if(seatIdx === -1) return true;
-    seatRemotePlayer(conn, seatIdx);
-    return false;
-  });
-  if(net.spectators.length < before) render();
+    if(seatIdx === -1){
+      remaining.push(conn);
+    }else{
+      seatRemotePlayer(conn, seatIdx);
+      changed = true;
+    }
+  }
+  net.spectators = remaining;
+  if(changed) render();
 }
 function hostDropConn(conn){
   if(!net || net.mode !== 'host') return;
@@ -1439,6 +1735,7 @@ function hostDropConn(conn){
       p.offline = true;
       if(pendingRemote[conn.seat]) pendingRemote[conn.seat]({t:'fold', remoteTimeout:true});
       log(N(p) + ' 掉线，座位保留等待重连');
+      if(nextHandResolver && allReadyNext()) resolveNext();
     }
   }
   render();
@@ -1448,6 +1745,7 @@ function refreshHostLobby(){
   if(!net || net.mode !== 'host' || gameRunning || nextHandResolver) return;
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   const seated = players.filter(p => p.seated);
   const seatRows = players.map((p, i) => {
     if(i === localIdx) return '<span><b style="color:' + p.color + '">' + (net.hostName || '房主') + '</b><span>房主 · 就绪</span></span>';
@@ -1459,15 +1757,18 @@ function refreshHostLobby(){
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>联机房间</h2>' +
     '<p class="roomcode">' + net.code + '</p>' +
-    '<p class="copyhint">点下方复制口令码，发给好友即可加入</p>' +
+    '<p class="copyhint">点下方复制 4 位数字口令码发给好友（120 分钟内有效）</p>' +
     '<div class="seatlist">' + seatRows + '</div>' +
     (spect ? '<p class="dim">另有 ' + spect + ' 位观众（满 8 座后自动观战）</p>' : '') +
     '<button class="btn bigbtn" id="btn-copy">复制口令码</button>' +
+    '<button class="btn bigbtn" id="btn-lobby-hist">查看历史战绩</button>' +
     '<button class="btn bigbtn" id="btn-start-net"' + (canStart ? '' : ' disabled') + '>' +
     (canStart ? '开始牌局（' + seated.length + ' 人在座）' : '等待玩家加入（至少 2 人）') +
     '</button>' +
     '</div>';
   $('#btn-copy').onclick = () => { copyText(net.code); };
+  const lh = $('#btn-lobby-hist');
+  if(lh) lh.onclick = () => showHistoryOverlay();
   $('#btn-start-net').onclick = () => {
     promoteSpectators();
     if(players.filter(p => p.seated).length < 2) return;
@@ -1531,6 +1832,14 @@ function connectRoom(peer, name, code, opts, n){
 }
 function clientHandleData(d){
   if(!d || !net || net.mode !== 'client') return;
+  if(d.type === 'expired'){
+    if(migrating){ migrating.cancelled = true; migrating = null; }
+    if(net){ try{ net.peer && net.peer.destroy(); }catch(e){} }
+    net = null;
+    lastSnapshot = null;
+    showNetPanel('房间口令码已失效（创建超过 120 分钟），无法继续加入', true);
+    return;
+  }
   if(d.type === 'welcome'){
     net.seat = d.seat;
     net.spectator = !!d.spectator;
@@ -1547,6 +1856,7 @@ function clientDisconnected(){
 function showMigratePanel(text, fatal){
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   ov.innerHTML = '<div class="ovcard">' +
     '<h2>' + (fatal ? '连接失败' : '房间恢复') + '</h2>' +
     '<p>' + text + '</p>' +
@@ -1634,7 +1944,7 @@ function takeoverAsHost(peer, info){
   const snap = info.snap;
   if(net && net.peer && net.peer !== peer){ try{ net.peer.destroy(); }catch(e){} }
   migrating = null;
-  net = {mode:'host', peer, code: info.code, conns:[], spectators:[], hostName: info.myName};
+  net = {mode:'host', peer, code: info.code, conns:[], spectators:[], hostName: info.myName, createdAt: Date.now()};
   localIdx = info.mySeat;
   hostIdx = info.mySeat;
   const refunded = (snap.players || []).some(q => q.bet > 0) || (snap.potCarried | 0) > 0;
@@ -1648,6 +1958,7 @@ function takeoverAsHost(peer, info){
       s.name = q.name;
       s.color = q.color;
       s.stack = q.stack + (refunded ? (q.totalBet || 0) : 0);
+      s.handDelta = q.handDelta || 0;
       s.folded = true;
       s.remote = i !== localIdx;
       s.offline = s.remote && !s.elim;
@@ -1658,6 +1969,11 @@ function takeoverAsHost(peer, info){
   }
   handNum = snap.handNum || 0;
   dealerIdx = (typeof snap.dealerIdx === 'number') ? snap.dealerIdx : -1;
+  cfg = snap.cfg || {stack: 2500, sb: 25, bb: 50};
+  handHistory = (snap.handHistory || []).slice();
+  handResult = snap.handResult || null;
+  histSession = (typeof snap.histSession === 'number') ? snap.histSession : Date.now();
+  saveHist();
   curBlinds = snap.curBlinds || blindSize();
   curBet = 0;
   minRaise = curBlinds.bb;
@@ -1675,6 +1991,13 @@ function takeoverAsHost(peer, info){
   log('<span class="sep">— ' + N(players[localIdx]) + ' 接管房间' + (refunded ? '，第 ' + handNum + ' 局作废并退还下注' : '') + ' —</span>');
   banner('你已接管房间，点击开始按钮继续对局', 3400);
   peer.on('connection', conn => {
+    if(net && Date.now() - net.createdAt > ROOM_TTL){
+      conn.on('open', () => {
+        try{ conn.send({type:'expired'}); }catch(e){}
+        setTimeout(() => { try{ conn.close(); }catch(e){} }, 600);
+      });
+      return;
+    }
     conn.on('data', d => hostHandleData(conn, d));
     conn.on('close', () => hostDropConn(conn));
     conn.on('error', () => hostDropConn(conn));
@@ -1684,6 +2007,7 @@ function takeoverAsHost(peer, info){
   setStage('');
   render();
   waitForNextHand();
+  beginNextPhase();
   showNextHandOverlay(() => runGame());
 }
 async function migrateReconnect(info){
@@ -1779,17 +2103,20 @@ function renderTurnTimer(){
 setInterval(renderTurnTimer, 300);
 function snapshotFor(seat){
   return {
-    v: 3, yourSeat: seat,
+    v: 4, yourSeat: seat,
     started: gameRunning,
     waitingNext: !!nextHandResolver,
     over: overInfo,
     handNum, hostIdx, dealerIdx, curBlinds, curBet, minRaise, curActor, potCarried,
+    cfg, handResult, handHistory: handHistory.slice(-80),
+    histSession,
     stage: stageLabel, board: board,
     turnLeft: turnDeadline ? Math.max(0, turnDeadline - Date.now()) : 0,
     utg: utgIdx,
     spectCount: net.spectators ? net.spectators.length : 0,
     players: players.map(p => ({
       i: p.i, seated: p.seated, name: p.name, color: p.color, stack: p.stack, bet: p.bet,
+      ready: !!readyNext[p.i], handDelta: (p.handDelta || 0),
       totalBet: p.totalBet, folded: p.folded, allIn: p.allIn, elim: p.elim,
       blind: p.blind, win: !!p.win, revealed: !!p.revealed, remote: !!p.remote,
       offline: !!p.offline, peerId: p.peerId || '',
@@ -1815,6 +2142,10 @@ function applySnapshot(s){
   board = s.board || [];
   curBet = s.curBet; minRaise = s.minRaise; curActor = s.curActor;
   dealerIdx = s.dealerIdx; handNum = s.handNum; curBlinds = s.curBlinds;
+  if(s.cfg) cfg = s.cfg;
+  if(Array.isArray(s.handHistory)) handHistory = s.handHistory;
+  if(typeof s.histSession === 'number') histSession = s.histSession;
+  handResult = s.handResult || null;
   hostIdx = (typeof s.hostIdx === 'number') ? s.hostIdx : 0;
   potCarried = s.potCarried;
   stageLabel = s.stage || '';
@@ -1822,58 +2153,169 @@ function applySnapshot(s){
   pendingAction = false;
   clientTurnLeft = {ms: s.turnLeft || 0, at: Date.now()};
   utgIdx = (typeof s.utg === 'number') ? s.utg : -1;
+  readyNext = {};
+  players.forEach(p => { if(p.ready) readyNext[p.i] = 1; });
+  if(!s.waitingNext) clientReadySent = false;
   $('#hud-stage').textContent = stageLabel;
   rebuildLog(s.logLines || []);
   if(lastOppCount !== seatedOpponents().length) buildOppSlots();
   if(s.over){ showClientOver(s.over); return; }
   if(!s.started){ showClientWaiting(); return; }
+  if(s.waitingNext){ showClientWaiting(); return; }
   hideOverlay();
   render();
   if(s.banner) banner(s.banner.text, s.banner.ms);
 }
 function showClientWaiting(){
   const ov = $('#overlay');
+  const waiting = snapshotWaitingNext;
   ov.classList.remove('hide');
-  const seated = players.filter(p => p.seated);
+  ov.classList.toggle('bottom', waiting);
   const rows = players.map((p, i) => {
     if(!p.seated) return '<span><b style="color:#7f909f">空位 ' + i + '</b><span>等待加入</span></span>';
-    const you = i === localIdx ? '【你】' : '';
-    const hostMark = i === hostIdx ? '【房主】' : '';
-    return '<span><b style="color:' + p.color + '">' + you + hostMark + p.name + '</b><span>' + (p.offline ? '离线中' : (p.stack > 0 ? '$' + p.stack : '就绪')) + '</span></span>';
+    if(!waiting){
+      const you = i === localIdx ? '【你】' : '';
+      const hostMark = i === hostIdx ? '【房主】' : '';
+      return '<span><b style="color:' + p.color + '">' + you + hostMark + p.name + '</b><span>' + (p.offline ? '离线中' : '就绪') + '</span></span>';
+    }
+    return nextRowHtml(p);
   }).join('');
+  const res = (waiting && handResult)
+    ? '<p class="winline">胜者：<b>' + handResult.names + '</b>' + (handResult.hand ? ' · ' + handResult.hand : '') + '<br>赢得 $' + handResult.amt + '（' + handResult.reason + '）</p>'
+    : '';
+  const headTitle = waiting ? '第 ' + Math.max(handNum, 1) + ' 局结束' : (localIdx < 0 ? '已加入（观战）' : '已加入房间 ' + (net && net.code || ''));
+  let tail, readyBtn = '';
+  if(waiting){
+    const myReady = localIdx >= 0 && (readyNext[localIdx] || clientReadySent);
+    const canReady = localIdx >= 0 && players[localIdx] && players[localIdx].seated && !players[localIdx].elim;
+    readyBtn = canReady
+      ? '<button class="btn bigbtn" id="btn-cready"' + (myReady ? ' disabled' : '') + '>' + (myReady ? '已准备' : '准备下一局') + '</button>'
+      : '';
+    tail = '<p class="dim" id="next-count">所有人准备后开始下一局 · 已离开或离线的玩家不再等待</p>' +
+      '<button class="btn bigbtn" id="btn-chist">查看历史战绩</button>';
+  }else{
+    tail = '<p class="dim">' + (localIdx < 0 ? '当前观战中 · 出现空位时下一局自动上场' : '房主开始牌局后自动进入 · 你的座位在下方') + '</p>';
+  }
   ov.innerHTML = '<div class="ovcard">' +
-    '<h2>' + (localIdx < 0 ? '已加入（观战）' : '已加入房间 ' + (net && net.code || '')) + '</h2>' +
+    '<h2>' + headTitle + '</h2>' +
+    readyBtn +
+    res +
     '<div class="seatlist">' + rows + '</div>' +
-    '<p class="dim">' + (localIdx < 0 ? '当前观战中 · 出现空位时下一局自动上场' : '房主开始牌局后自动进入 · 你的座位在下方') + '</p>' +
+    tail +
     '</div>';
+  const bh = $('#btn-chist');
+  if(bh) bh.onclick = () => showHistoryOverlay();
+  const rb = $('#btn-cready');
+  if(rb) rb.onclick = () => {
+    if(clientReadySent) return;
+    clientReadySent = true;
+    if(net && net.conn && net.conn.open !== false){
+      try{ net.conn.send({type:'ready'}); }catch(e){}
+    }
+    rb.disabled = true;
+    rb.textContent = '已准备';
+  };
 }
 function showClientOver(over){
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   ov.innerHTML = '<div class="ovcard">' +
     '<h1>牌局结束</h1>' +
     '<p>' + (over.winner ? '<b>' + over.winner + '</b> 赢下了整场对局。' : '整场对局已结束。') + '</p>' +
     '<p class="dim">共 ' + (over.hands || handNum) + ' 局 · 房主重新开局时自动跟进，或刷新页面重新加入</p>' +
+    '<button class="btn bigbtn" id="btn-chist">查看历史战绩</button>' +
     '</div>';
+  const bh = $('#btn-chist');
+  if(bh) bh.onclick = () => showHistoryOverlay();
+}
+function readCfg(){
+  const num = (id, def, lo, hi) => {
+    const el = document.querySelector('#' + id);
+    let v = Math.round(parseFloat(el && el.value) || 0);
+    if(!isFinite(v) || v <= 0) v = def;
+    return Math.min(hi, Math.max(lo, v));
+  };
+  const stack = num('inp-stack', 2500, 100, 1000000);
+  const sb = num('inp-sb', 25, 1, 50000);
+  const bb = sb * 2;
+  return {stack, sb, bb};
+}
+function resetToLobby(){
+  let peer = null, conn = null;
+  if(net){
+    peer = net.peer;
+    conn = (net.mode === 'client') ? net.conn : null;
+    net = null;
+  }
+  if(conn && conn.open !== false){
+    try{ conn.send({type:'leave'}); }catch(e){}
+  }
+  setTimeout(() => { try{ peer && peer.destroy(); }catch(e){} }, 300);
+  if(migrating){ migrating.cancelled = true; migrating = null; }
+  lastSnapshot = null;
+  gameRunning = false;
+  overInfo = null;
+  nextHandResolver = null;
+  nextOnStart = null;
+  readyNext = {};
+  clientReadySent = false;
+  pendingAction = false;
+  snapshotWaitingNext = false;
+  humanResolver = null;
+  players = [];
+  board = [];
+  curActor = -1;
+  dealerIdx = -1;
+  handNum = 0;
+  stageLabel = '';
+  potCarried = 0;
+  curBet = 0;
+  handResult = null;
+  logLines = [];
+  buildOppSlots();
+  syncBoard();
+  $('#me').className = 'spect';
+  $('#me-info').innerHTML = '';
+  renderSlotCards(document.querySelectorAll('#me-cards .card'), {seated:false, hand:[], handHidden:false, revealed:false, i:-1}, true);
+  $('#logdock-body').innerHTML = '';
+  $('#dock-latest').innerHTML = '';
+  $('#dock-latest').classList.remove('hl');
+  $('#logdock').classList.remove('collapsed');
+  $('#btn-dock-toggle').textContent = '收起';
+  $('#dock-title').textContent = '操作记录';
+  $('#dock-title').classList.remove('hl');
+  setStage('');
+  $('#hud-hand').textContent = '德州扑克';
+  $('#hud-blind').textContent = '';
+  $('#hud-room').style.display = 'none';
+  hideOverlay();
+  showStartOverlay();
 }
 function showStartOverlay(){
   const ov = $('#overlay');
   ov.classList.remove('hide');
+  ov.classList.remove('bottom');
   let saved = '';
   try{ saved = (localStorage.getItem('thp-name') || '').trim(); }catch(e){}
   ov.innerHTML = '<div class="ovcard">' +
     '<h1>德州扑克</h1>' +
-    '<p>无限注德州扑克 · 单机或口令码联机<br>起始筹码 $2500 · 盲注 $25/$50（每 8 局升级）</p>' +
+    '<p>无限注德州扑克 · 单机或口令码联机 · 盲注每 8 局升级</p>' +
     '<div class="joinrow">' +
       '<input id="inp-name" maxlength="8" placeholder="你的昵称（同桌可见）" value="' + saved.replace(/"/g, '') + '">' +
+    '</div>' +
+    '<div class="cfgrow">' +
+      '<label>起始筹码<input id="inp-stack" type="number" value="' + cfg.stack + '" min="100" step="50"></label>' +
+      '<label>小盲（大盲自动×2）<input id="inp-sb" type="number" value="' + cfg.sb + '" min="1" step="1"></label>' +
     '</div>' +
     '<button class="btn bigbtn" id="btn-solo">单机对战 AI</button>' +
     '<button class="btn bigbtn" id="btn-host">创建联机房间</button>' +
     '<div class="joinrow">' +
-      '<input id="inp-code" maxlength="5" placeholder="口令码" inputmode="latin" autocomplete="off">' +
+      '<input id="inp-code" maxlength="4" placeholder="4 位数字口令码" inputmode="numeric" autocomplete="off">' +
       '<button class="btn bigbtn" id="btn-join" style="margin-top:0">加入房间</button>' +
     '</div>' +
-    '<p class="dim">创建房间后把 5 位口令码发给好友<br>牌局进行中也可加入：有空位下一局上场，满座可观战<br>联机需双方都能访问外网</p>' +
+    '<p class="dim">创建房间后把 4 位数字口令码发给好友（120 分钟内有效，逾期无法加入）<br>牌局进行中也可加入：有空位下一局上场，满座可观战<br>联机需双方都能访问外网</p>' +
+    '<button class="btn bigbtn" id="btn-start-hist">查看历史战绩</button>' +
     '<div id="net-status" class="netstatus"></div>' +
     '</div>';
   const nameEl = $('#inp-name'), codeEl = $('#inp-code');
@@ -1881,15 +2323,17 @@ function showStartOverlay(){
     try{ localStorage.setItem('thp-name', (nameEl.value || '').trim()); }catch(e){}
   };
   codeEl.oninput = () => {
-    codeEl.value = (codeEl.value || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+    codeEl.value = (codeEl.value || '').replace(/[^0-9]/g, '');
   };
   nameEl.onkeydown = e => { if(e.key === 'Enter'){ codeEl.focus(); } };
   codeEl.onkeydown = e => { if(e.key === 'Enter'){ $('#btn-join').click(); } };
-  $('#btn-solo').onclick = () => { startSolo(getName('你')); };
-  $('#btn-host').onclick = () => { createRoom(getName('房主')); };
+  $('#btn-solo').onclick = () => { startSolo(getName('你'), readCfg()); };
+  $('#btn-host').onclick = () => { createRoom(getName('房主'), readCfg()); };
+  const bh = $('#btn-start-hist');
+  if(bh) bh.onclick = () => showHistoryOverlay();
   $('#btn-join').onclick = () => {
-    const code = (codeEl.value || '').trim().toUpperCase();
-    if(code.length < 4){ $('#net-status').textContent = '请输入完整口令码'; return; }
+    const code = (codeEl.value || '').trim();
+    if(code.length !== 4){ $('#net-status').textContent = '请输入 4 位数字口令码'; return; }
     joinRoom(getName('玩家'), code);
   };
 }
@@ -1902,6 +2346,12 @@ if(typeof window !== 'undefined'){
     lastSnap: () => lastSnapshot, migrating: () => migrating, loadGuestId, genGuestId,
     promoteSpectators, seatRemotePlayer, copyText, showToast, refreshHostLobby, render,
     players: () => players, net: () => net,
+    posTags, newHand, syncBoard, readCfg, genCode, markReady, resetToLobby,
+    readyNext: () => readyNext,
+    handHistory: () => handHistory, handResult: () => handResult,
+    recordHand, loadHist, saveHist, clearHist,
+    histSession: () => histSession, setHistSession(v){ histSession = v; },
+    cfg: () => cfg, ROOM_TTL: () => ROOM_TTL,
     setNet(n){ net = n; },
     setCurActor(i){ curActor = i; },
     startHostForTest(name){ net = {mode:'host', conns:[], spectators:[], code:'TEST', hostName:name}; initSeats('host', name); },
@@ -1924,6 +2374,23 @@ function scaleStage(){
   $('#stage').style.transform = 'scale(' + s + ')';
 }
 window.addEventListener('resize', scaleStage);
+let leaveArmed = false, leaveTimer = null;
+$('#btn-leave').onclick = () => {
+  const btn = $('#btn-leave');
+  if(!leaveArmed){
+    leaveArmed = true;
+    btn.classList.add('armed');
+    btn.textContent = '确认离开?';
+    clearTimeout(leaveTimer);
+    leaveTimer = setTimeout(() => { leaveArmed = false; btn.classList.remove('armed'); btn.textContent = '离开'; }, 2500);
+    return;
+  }
+  clearTimeout(leaveTimer);
+  leaveArmed = false;
+  btn.classList.remove('armed');
+  btn.textContent = '离开';
+  resetToLobby();
+};
 $('#btn-fold').onclick = () => submitAction({t:'fold'});
 $('#btn-call').onclick = () => {
   const p = localIdx >= 0 ? players[localIdx] : null;
@@ -1951,6 +2418,10 @@ $('#logdock-head').onclick = () => {
   const dock = $('#logdock');
   const collapsed = dock.classList.toggle('collapsed');
   $('#btn-dock-toggle').textContent = collapsed ? '展开' : '收起';
+};
+$('#btn-hist').onclick = e => {
+  e.stopPropagation();
+  showHistoryOverlay();
 };
 $('#hud-room').onclick = () => { if(net && net.code) copyText(net.code); };
 window.addEventListener('load', () => {
